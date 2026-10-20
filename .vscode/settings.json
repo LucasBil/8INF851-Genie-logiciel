@@ -1,0 +1,7 @@
+{
+    "editor.formatOnSave": true,
+    "C_Cpp.formatting": "clangFormat",
+    "C_Cpp.clang_format_fallbackStyle": "none",
+    "C_Cpp.codeAnalysis.runAutomatically": true,
+    "C_Cpp.codeAnalysis.clangTidy.enabled": true
+}

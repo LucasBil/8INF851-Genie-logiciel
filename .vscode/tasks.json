@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compiler MSS",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build-mingw"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn": "Configurer MSS",
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "Configurer MSS",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-S",
+                "${workspaceFolder}",
+                "-B",
+                "${workspaceFolder}/build-mingw",
+                "-G",
+                "MinGW Makefiles",
+                "-DCMAKE_BUILD_TYPE=Debug"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
