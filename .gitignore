@@ -1,0 +1,40 @@
+# CMake and compiled build output
+/build*/
+/out/
+CMakeFiles/
+CMakeCache.txt
+CTestTestfile.cmake
+cmake_install.cmake
+compile_commands.json
+Makefile
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.a
+*.lib
+*.pdb
+*.ilk
+
+# Test and coverage output
+*.gcda
+*.gcno
+*.gcov
+coverage/
+
+# Visual Studio generated state (keep .vscode project configuration)
+/.vs/
+*.sln
+*.slnx
+*.vcxproj
+*.vcxproj.filters
+*.user
+
+# Temporary editor and operating-system files
+*~
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
