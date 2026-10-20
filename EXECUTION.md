@@ -52,6 +52,19 @@ cmake --build build-mingw
 
 Le programme interactif attend les dimensions et les valeurs de la matrice. L'exécutable `mss.exe` est produit dans `build-mingw`.
 
+### Générer `main.exe` à la racine
+
+Le fichier `main.exe` déjà présent à la racine peut provenir d'une ancienne compilation. Pour générer la version actuelle, compile MSS puis copie l'exécutable CMake :
+
+```powershell
+cmake -S . -B build-mingw -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug
+cmake --build build-mingw --target mss
+Copy-Item .\build-mingw\mss.exe .\main.exe -Force
+.\main.exe
+```
+
+Le programme CMake s'appelle `mss`; `main.exe` est seulement une copie de `mss.exe`. Les exécutables générés sont ignorés par Git et ne doivent pas être commités.
+
 ### Lancer les tests unitaires
 
 ```powershell
