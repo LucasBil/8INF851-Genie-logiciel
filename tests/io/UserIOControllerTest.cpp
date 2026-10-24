@@ -42,3 +42,15 @@ TEST(UserIOControllerTest, RejectsInvalidDimensionInput) {
 
     EXPECT_THROW(controller.readMatrix(), std::runtime_error);
 }
+
+TEST(UserIOControllerTest, RejectsDimensionsSmallerThanTwoOrNotPowerOfTwo) {
+    std::istringstream tooSmall("1 1");
+    std::ostringstream tooSmallOutput;
+    mss::UserIOController tooSmallController(tooSmall, tooSmallOutput);
+    EXPECT_THROW(tooSmallController.readMatrix(), std::invalid_argument);
+
+    std::istringstream notPowerOfTwo("6 6");
+    std::ostringstream notPowerOfTwoOutput;
+    mss::UserIOController notPowerOfTwoController(notPowerOfTwo, notPowerOfTwoOutput);
+    EXPECT_THROW(notPowerOfTwoController.readMatrix(), std::invalid_argument);
+}

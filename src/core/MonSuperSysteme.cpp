@@ -23,4 +23,21 @@ const Cpu &MonSuperSysteme::cpu() const noexcept {
     return cpuInstance;
 }
 
+void MonSuperSysteme::execute(Operation&){
+    // 1. Lire le type de l'opération.
+    // 2. Lire les adresses mémoire d'entrée.
+    // 3. Exécuter l'opération (Create, Add, Multiply, etc.).
+    // 4. Ajouter l'opération exécutée à trace.
+    // 5. Ajouter de nouvelles opérations à stack si nécessaire.
+}
+
+void MonSuperSysteme::run() {
+    while (!stack.empty()) {
+        Operation operation = stack.top();
+        stack.pop();
+        execute(operation);
+    }
+}
+
+
 } // namespace mss

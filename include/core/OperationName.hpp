@@ -3,7 +3,7 @@
 namespace mss {
 
 /**
- * @brief Noms des opérations MSS proposées par le cahier de conception.
+ * @brief Noms des opérations MSS
  */
 enum class OperationName {
     Create,

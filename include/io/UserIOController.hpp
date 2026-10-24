@@ -7,7 +7,7 @@
 namespace mss {
 
 /**
- * @brief Contrôleur interactif de matrices sur des flux C++ injectables.
+ * @brief Contrôleur interactif de matrices
  */
 class UserIOController final : public AbstractIOController {
   public:

@@ -6,6 +6,7 @@
 
 TEST(CpuTest, ReportsThatOperationCostsAreNotSpecified) {
     const mss::Cpu cpu;
+    mss::Operation operation{mss::OperationName::Add, {}};
 
-    EXPECT_THROW(cpu.getOperationCost(mss::OperationName::Add), std::logic_error);
+    EXPECT_THROW(cpu.getOperationCost(operation), std::logic_error);
 }

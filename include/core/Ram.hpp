@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Matrix.hpp"
-#include "core/OperationName.hpp"
+#include "core/Operation.hpp"
 
 #include <cstddef>
 #include <vector>
@@ -37,10 +37,10 @@ class Ram {
     /**
      * @brief Signale que le modèle de coût RAM doit encore être défini.
      * @param operation Opération dont le coût est demandé.
-     * @return Coût RAM lorsque le modèle sera défini.
+     * @return Coût RAM.
      * @throws std::logic_error tant que la règle de coût n'est pas spécifiée.
      */
-    int getOperationCost(OperationName operation) const;
+    int getOperationCost(Operation& operation) const;
 
   private:
     std::vector<Matrix> memory;

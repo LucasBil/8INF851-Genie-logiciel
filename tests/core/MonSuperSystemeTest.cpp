@@ -20,7 +20,8 @@ TEST(MonSuperSystemeTest, RejectsMissingOrDuplicateInitialMatrix) {
 }
 
 TEST(MonSuperSystemeTest, ExposesItsCpuWithoutInventingOperationCosts) {
-    const mss::MonSuperSysteme system;
+    mss::MonSuperSysteme system;
+    mss::Operation operation{mss::OperationName::Add, {}};
 
-    EXPECT_THROW(system.cpu().getOperationCost(mss::OperationName::Add), std::logic_error);
+    EXPECT_THROW(system.cpu().getOperationCost(operation), std::logic_error);
 }
