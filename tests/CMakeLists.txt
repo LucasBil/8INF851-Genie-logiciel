@@ -1,4 +1,5 @@
 add_executable(mss_tests
+    core/ConfigurationTest.cpp
     core/MatrixTest.cpp
     core/MonSuperSystemeTest.cpp
     core/CpuTest.cpp

@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <stack>
-#include <array>
+#include <vector>
 
 
 namespace mss {
@@ -42,7 +42,7 @@ class MonSuperSysteme {
      * @brief execute l'operation passée en argument avec les adresses mémoires données
      * @return void
      */
-    void execute(Operation& operation); 
+    void execute(int); 
 
     /**
      * @brief appelle execute dans que la pile n'est pas vide
@@ -59,9 +59,10 @@ class MonSuperSysteme {
 
   private:
 
-    std::stack<Operation> stack;
-    std::array<Operation, 100> trace; // Taille du tableau à spécifier
+    std::stack<int> stack;
+    std::vector<OperationName> trace; // Taille du tableau à spécifier
 
+    //Configuration configuration;
     Cpu cpuInstance;
     Ram ram;
 };
