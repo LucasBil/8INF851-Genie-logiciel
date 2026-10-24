@@ -44,6 +44,20 @@ Ouvrir PowerShell à la racine du dépôt.
 
 ### Compiler et lancer l'application
 
+Le script local `run-mss.bat` configure puis compile MSS et lance immédiatement
+le programme interactif. Il peut être exécuté depuis l'Explorateur Windows ou
+depuis PowerShell à la racine du dépôt :
+
+```powershell
+.\run-mss.bat
+```
+
+Le script configure `build-mingw` avec le générateur MinGW Makefiles; les
+prérequis ci-dessus doivent donc être installés. Le script est ignoré par Git
+et n'est pas inclus dans les clones du dépôt.
+
+Sans le script, les commandes équivalentes sont :
+
 ```powershell
 cmake -S . -B build-mingw -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug
 cmake --build build-mingw
@@ -67,11 +81,45 @@ Le programme CMake s'appelle `mss`; `main.exe` est seulement une copie de `mss.e
 
 ### Lancer les tests unitaires
 
+Le script local `run-tests.bat` configure puis compile la cible de tests et les
+exécute avec CTest :
+
+```powershell
+.\run-tests.bat
+```
+
+Comme `run-mss.bat`, ce script est ignoré par Git et n'est pas inclus dans les
+clones du dépôt.
+
+Sans le script, les commandes équivalentes sont :
+
 ```powershell
 cmake -S . -B build-mingw -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug
 cmake --build build-mingw
 ctest --test-dir build-mingw --output-on-failure
 ```
+
+### Mesurer la couverture de code
+
+La couverture nécessite GCC/MinGW-w64 (avec `gcov`) et l'outil Python `gcovr`.
+Installe `gcovr` une fois dans PowerShell :
+
+```powershell
+python -m pip install gcovr
+```
+
+Vérifie que `cmake`, `gcov` et `gcovr` sont accessibles dans le `PATH`, puis
+lance le script local :
+
+```powershell
+.\run-coverage.bat
+```
+
+Le script configure un build séparé dans `build-coverage`, compile les tests
+avec l'instrumentation `ENABLE_COVERAGE`, les exécute et affiche un résumé de
+couverture. Le rapport HTML détaillé est écrit dans
+`build-coverage\coverage.html`. Le script est ignoré par Git et n'est pas
+inclus dans les clones du dépôt.
 
 Il faut exécuter ces commandes dans PowerShell/Windows. Ne lance pas `ctest` sur un dossier configuré depuis Linux/WSL : ses fichiers contiennent des chemins absolus propres à cet environnement et ne sont pas portables. Si CMake indique que `build-mingw` a été créé avec un autre générateur, configure un nouveau dossier (`build-windows`) avec les mêmes commandes en remplaçant `build-mingw` par `build-windows`.
 

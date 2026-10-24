@@ -23,7 +23,7 @@ const Cpu &MonSuperSysteme::cpu() const noexcept {
     return cpuInstance;
 }
 
-void MonSuperSysteme::execute(Operation&){
+void MonSuperSysteme::execute(int){
     // 1. Lire le type de l'opération.
     // 2. Lire les adresses mémoire d'entrée.
     // 3. Exécuter l'opération (Create, Add, Multiply, etc.).
@@ -33,7 +33,7 @@ void MonSuperSysteme::execute(Operation&){
 
 void MonSuperSysteme::run() {
     while (!stack.empty()) {
-        Operation operation = stack.top();
+        int operation = stack.top();
         stack.pop();
         execute(operation);
     }
