@@ -15,7 +15,8 @@ TEST(RamTest, StoresMatricesAtSequentialAddresses) {
 
 TEST(RamTest, RejectsInvalidAddressesAndUnspecifiedCosts) {
     const mss::Ram ram;
+    mss::Operation operation{mss::OperationName::Add, {}};
 
     EXPECT_THROW(ram.at(0), std::out_of_range);
-    EXPECT_THROW(ram.getOperationCost(mss::OperationName::Add), std::logic_error);
+    EXPECT_THROW(ram.getOperationCost(operation), std::logic_error);
 }

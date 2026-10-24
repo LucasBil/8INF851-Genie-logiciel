@@ -18,7 +18,7 @@ std::size_t Ram::size() const noexcept {
     return memory.size();
 }
 
-int Ram::getOperationCost(OperationName operation) const {
+int Ram::getOperationCost(Operation& operation) const {
     (void)operation;
     throw std::logic_error("Le modèle de coût RAM n'a pas encore été spécifié.");
 }

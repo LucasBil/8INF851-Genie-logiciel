@@ -4,6 +4,11 @@
 #include "core/Matrix.hpp"
 #include "core/Ram.hpp"
 
+#include <iostream>
+#include <stack>
+#include <array>
+
+
 namespace mss {
 
 /**
@@ -28,12 +33,35 @@ class MonSuperSysteme {
     const Matrix &initialMatrix() const;
 
     /**
-     * @brief Retourne le processeur virtuel associé au système.
-     * @return Processeur virtuel du système.
+     * @brief Retourne le processeur associé au système.
+     * @return Processeur du système.
      */
     const Cpu &cpu() const noexcept;
 
+    /**
+     * @brief execute l'operation passée en argument avec les adresses mémoires données
+     * @return void
+     */
+    void execute(Operation& operation); 
+
+    /**
+     * @brief appelle execute dans que la pile n'est pas vide
+     * @return void
+     */
+    void run();
+
+    /**
+     * @brief retourne un version écrite de l'historique des operations effecutées
+     * @return string
+     */
+
+    //string returnTrace(Config& config);
+
   private:
+
+    std::stack<Operation> stack;
+    std::array<Operation, 100> trace; // Taille du tableau à spécifier
+
     Cpu cpuInstance;
     Ram ram;
 };

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "core/OperationName.hpp"
+#include "core/Operation.hpp"
 
 namespace mss {
 
 /**
- * @brief Processeur virtuel; son modèle de coût reste à préciser.
+ * @brief Processeur virtuel;
  */
 class Cpu {
   public:
@@ -15,7 +15,8 @@ class Cpu {
      * @return Coût CPU lorsque le modèle sera défini.
      * @throws std::logic_error tant que la règle de coût n'est pas spécifiée.
      */
-    int getOperationCost(OperationName operation) const;
+
+    int getOperationCost(Operation& operation) const;
 };
 
 } // namespace mss
