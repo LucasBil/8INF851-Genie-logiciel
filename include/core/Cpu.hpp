@@ -55,8 +55,8 @@ class Cpu {
      */
     Matrix& calcDeterminant(Matrix& matrix);
 
-    Matrix& add(Matrix& matrix);
-    Matrix& multiply(Matrix& matrix);
+    Matrix& add(Matrix& matrix, Matrix& matrix_bis);
+    Matrix& multiply(Matrix& matrix, Matrix& matrix_bis);
 
     void printMatrix(Matrix& matrix);
 
