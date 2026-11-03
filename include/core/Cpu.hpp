@@ -13,7 +13,7 @@ namespace mss {
 class Cpu {
   public:
 
-    cpu();
+    Cpu();
     /**
      * @brief Signale que le modèle de coût CPU doit encore être défini.
      * @param operation Opération dont le coût est demandé.
