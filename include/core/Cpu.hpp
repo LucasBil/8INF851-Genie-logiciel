@@ -13,7 +13,7 @@ namespace mss {
 class Cpu {
   public:
 
-    cpu();
+    Cpu();
     /**
      * @brief Signale que le modèle de coût CPU doit encore être défini.
      * @param operation Opération dont le coût est demandé.
@@ -55,8 +55,8 @@ class Cpu {
      */
     Matrix& calcDeterminant(Matrix& matrix);
 
-    Matrix& add(Matrix& matrix);
-    Matrix& multiply(Matrix& matrix);
+    Matrix& add(Matrix& matrix, Matrix& matrix_bis);
+    Matrix& multiply(Matrix& matrix, Matrix& matrix_bis);
 
     void printMatrix(Matrix& matrix);
 

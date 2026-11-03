@@ -5,61 +5,43 @@
 #include "core/AddressSlot.hpp"
 
 #include <cstddef>
+#include <optional>
+#include <variant>
 #include <vector>
 
 namespace mss {
 
-/**
- * @brief Mémoire virtuelle contenant les matrices de la simulation.
- */
+/** Mémoire virtuelle: une adresse contient une matrice ou une opération. */
 class Ram {
-  public: 
-    /**
-     * @brief Ajoute une matrice et retourne son adresse mémoire.
-     * @param matrix Matrice à stocker.
-     * @return Adresse mémoire attribuée.
-     */
+  public:
+    // API du prototype conservée pour MonSuperSysteme et les tests existants.
     std::size_t store(Matrix matrix);
-
-    /**
-     * @brief Accède à une matrice stockée.
-     * @param address Adresse de la matrice.
-     * @return Matrice à l'adresse donnée.
-     * @throws std::out_of_range si l'adresse est invalide.
-     */
     const Matrix &at(std::size_t address) const;
-
-    /**
-     * @brief Retourne le nombre de matrices stockées.
-     * @return Nombre de matrices en mémoire.
-     */
     std::size_t size() const noexcept;
+    int getOperationCost(Operation &operation) const;
 
-    /**
-     * @brief Signale que le modèle de coût RAM doit encore être défini.
-     * @param operation Opération dont le coût est demandé.
-     * @return Coût RAM.
-     * @throws std::logic_error tant que la règle de coût n'est pas spécifiée.
-     */
-    int getOperationCost(Operation& operation) const;
-
-    /**
-     * @brief  prend en entrée un ensemble d’entiers, crée une matrice et la range en mémoire
-     * @param vector de values de la matrice a creer
-     * @return renvoie son adresse
-     */
-    int create(std::vector<int>& values);
-    std::vector<int>& split(int address);
-    int fuse(std::vector<int>& addresses);
-    int load(Matrix);
-    int load(std::vector<Matrix>& matrixList);
+    // Opérations décrites dans la section 2.3.3 du cahier de conception.
+    int create(const std::vector<int> &values);
+    void remove(int address); // 'delete' est un mot réservé en C++.
+    int split(int address);
+    int fuse(const std::vector<int> &addresses);
+    int load(Matrix matrix);
+    int load(const std::vector<Matrix> &matrices);
     int load(Operation operation);
-    void set(int value, Matrix);
-    void set(int value, Operation);
+    int load(OperationName type, const std::vector<int> &inputLocations);
+    void set(int address, Matrix matrix);
+    void set(int address, Operation operation);
+    void set(int address, OperationName type, const std::vector<int> &inputLocations);
 
+    const Operation &operationAt(std::size_t address) const;
+    bool occupied(std::size_t address) const noexcept;
 
   private:
-    std::vector<Matrix> memory;
+    using Cell = std::variant<Matrix, Operation>;
+    std::vector<std::optional<Cell>> memory;
+
+    std::size_t findContiguous(std::size_t count) const;
+    static std::size_t checkedAddress(int address);
 };
 
 } // namespace mss
