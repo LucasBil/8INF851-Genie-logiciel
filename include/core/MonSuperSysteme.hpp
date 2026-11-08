@@ -44,6 +44,18 @@ class MonSuperSysteme {
     const Cpu &cpu() const noexcept;
 
     /**
+     * @brief Retourne la RAM du système.
+     * @return Référence modifiable à la RAM.
+     */
+    Ram &getRam() noexcept;
+
+    /**
+     * @brief Retourne la pile des adresses d'opérations à exécuter.
+     * @return Référence modifiable à la pile.
+     */
+    std::stack<int> &getStack() noexcept;
+
+    /**
      * @brief execute l'operation passée en argument avec les adresses mémoires données
      * @return void
      */

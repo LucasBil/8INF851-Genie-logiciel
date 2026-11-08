@@ -1,6 +1,7 @@
 #pragma once
 
 #include "configuration/Configuration.hpp"
+#include "core/Matrix.hpp"
 
 #include <iosfwd>
 #include <vector>
@@ -29,6 +30,11 @@ class UserOutputController {
      * @return true si une configuration est disponible.
      */
     bool hasConfigurations() const noexcept;
+
+    /**
+     * @brief Affiche une matrice provenant du système MSS.
+     */
+    void printMatrix(const Matrix &matrix);
 
     /**
      * @brief Affiche la trace et le coût de chaque configuration, puis propose de l'enregistrer.

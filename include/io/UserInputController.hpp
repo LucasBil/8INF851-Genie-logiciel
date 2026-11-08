@@ -45,14 +45,18 @@ class UserInputController final : public AbstractInputController {
     void saveConfiguration();
 
     /**
-     * @brief Demande une matrice à l'utilisateur et lance son exécution.
+     * @brief Demande une matrice à l'utilisateur et la charge dans la RAM.
+     */
+    void createMatrix();
+
+    /**
+     * @brief Demande une suite d'opérations et lance leur exécution.
      */
     void execute();
 
     std::istream &input;
     std::ostream &terminal;
     std::vector<Configuration> configurations;
-    bool matrixLoaded = false;
 };
 
 } // namespace mss

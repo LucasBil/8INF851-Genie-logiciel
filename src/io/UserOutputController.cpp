@@ -87,6 +87,19 @@ bool UserOutputController::hasConfigurations() const noexcept {
     return !configurations.empty();
 }
 
+void UserOutputController::printMatrix(const Matrix &matrix) {
+    output << "Matrice :\n";
+    for (std::size_t row = 0; row < matrix.rows(); ++row) {
+        for (std::size_t column = 0; column < matrix.columns(); ++column) {
+            if (column != 0) {
+                output << ' ';
+            }
+            output << matrix.at(row, column);
+        }
+        output << '\n';
+    }
+}
+
 void UserOutputController::printTrace(const std::vector<OperationName> &trace, bool askToSave) {
     const std::string report = buildReport(configurations, trace);
     output << report;

@@ -11,7 +11,7 @@
 #include <sstream>
 #include <string>
 
-TEST(UserInputControllerTest, LoadsInputAndReportsWhenTheCoreHasNoOperation) {
+TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     mss::SerializerTool serializer;
     mss::Configuration configuration;
     configuration.set(mss::OperationName::Rotate, 4);
@@ -30,7 +30,7 @@ TEST(UserInputControllerTest, LoadsInputAndReportsWhenTheCoreHasNoOperation) {
     }
 
     std::istringstream input("1 " + std::to_string(configurationIndex) +
-                             " q 3 2 2 1 2 3 4 4");
+                             " q 3 2 2 1 2 3 4 4 3 q 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;
@@ -40,6 +40,14 @@ TEST(UserInputControllerTest, LoadsInputAndReportsWhenTheCoreHasNoOperation) {
     std::filesystem::remove(std::filesystem::path("configurations") / (name + ".txt"));
 
     EXPECT_DOUBLE_EQ(system.initialMatrix().at(0, 0), 1.0);
+    EXPECT_EQ(system.getRam().operationAt(1).type, mss::OperationName::Rotate);
+    EXPECT_NE(terminal.str().find("Matrice creee a l'adresse RAM 0."),
+              std::string::npos);
+    EXPECT_NE(terminal.str().find("Matrice disponible a l'adresse RAM 0:"),
+              std::string::npos);
+    EXPECT_EQ(terminal.str().find("Adresse RAM de la matrice"), std::string::npos);
+    EXPECT_NE(terminal.str().find("1 operation(s) ajoutee(s) a MSS."),
+              std::string::npos);
     EXPECT_NE(terminal.str().find("Aucune operation n'a ete executee par MSS"),
               std::string::npos);
 }
@@ -48,9 +56,7 @@ TEST(UserInputControllerTest, RejectsInvalidMatrixDimensionsAndValues) {
     mss::SerializerTool serializer;
     mss::Configuration configuration;
     configuration.set(mss::OperationName::Rotate, 4);
-    std::istringstream input(
-        "2 3 1 1 1 1 1 1 1 1 1 1 1 active_config "
-        "3 2 3 2 2 1 2 invalid 3 4 4");
+    std::istringstream input("3 2 3 2 2 1 2 invalid 3 4 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;
@@ -140,7 +146,7 @@ TEST(UserInputControllerTest, LoadsMultipleConfigurationsUntilTheUserExitsSelect
 
 TEST(UserInputControllerTest, DoesNotStartWithoutAnActiveConfiguration) {
     mss::SerializerTool serializer;
-    std::istringstream input("3 4");
+    std::istringstream input("4 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;

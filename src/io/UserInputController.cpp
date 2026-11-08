@@ -29,6 +29,34 @@ bool isPowerOfTwo(unsigned int value) {
     return value != 0 && (value & (value - 1U)) == 0;
 }
 
+bool parseOperationChoice(int choice, OperationName &operation) {
+    switch (choice) {
+    case 1: operation = OperationName::Split; return true;
+    case 2: operation = OperationName::Fuse; return true;
+    case 3: operation = OperationName::Rotate; return true;
+    case 4: operation = OperationName::Add; return true;
+    case 5: operation = OperationName::Multiply; return true;
+    case 6: operation = OperationName::CalcDeterminant; return true;
+    default: return false;
+    }
+}
+
+std::size_t requiredInputCount(OperationName operation) {
+    switch (operation) {
+    case OperationName::Split:
+    case OperationName::Rotate:
+    case OperationName::CalcDeterminant:
+        return 1;
+    case OperationName::Fuse:
+        return 4;
+    case OperationName::Add:
+    case OperationName::Multiply:
+        return 2;
+    default:
+        throw std::logic_error("Nombre d'entrees non defini pour cette operation.");
+    }
+}
+
 const char *operationName(OperationName operation) {
     switch (operation) {
     case OperationName::Create: return "Create";
@@ -119,8 +147,7 @@ void UserInputController::saveConfiguration() {
         const std::string name = operationName(operation);
         int cost = 0;
         while (true) {
-            if (!readInteger(std::string("Cout de ") + name +
-                                 " (strictement positif) : ",
+            if (!readInteger(std::string("Cout de ") + name +" (strictement positif) : ",
                              cost)) {
                 return;
             }
@@ -144,16 +171,7 @@ void UserInputController::saveConfiguration() {
     terminal << "Configuration sauvegardee et ajoutee aux configurations chargees.\n";
 }
 
-void UserInputController::execute() {
-    if (!output->hasConfigurations()) {
-        terminal << "Chargez ou creez une configuration avant l'execution.\n";
-        return;
-    }
-    if (matrixLoaded) {
-        terminal << "Une matrice a deja ete chargee; une nouvelle execution est impossible.\n";
-        return;
-    }
-
+void UserInputController::createMatrix() {
     int rowCount = 0;
     int columnCount = 0;
     while (true) {
@@ -185,8 +203,98 @@ void UserInputController::execute() {
         }
     }
 
-    mssInstance->loadInitialMatrix(Matrix(std::move(values)));
-    matrixLoaded = true;
+    auto &ram = mssInstance->getRam();
+    std::size_t address = 0;
+    Matrix matrix(std::move(values));
+    if (ram.size() == 0) {
+        mssInstance->loadInitialMatrix(std::move(matrix));
+    } else {
+        address = ram.store(std::move(matrix));
+    }
+    terminal << "Matrice creee a l'adresse RAM " << address << ".\n";
+    output->printMatrix(ram.at(address));
+}
+
+void UserInputController::execute() {
+    if (!output->hasConfigurations()) {
+        terminal << "Chargez ou creez une configuration avant l'execution.\n";
+        return;
+    }
+
+    auto &ram = mssInstance->getRam();
+    std::vector<std::size_t> matrixAddresses;
+    for (std::size_t address = 0; address < ram.size(); ++address) {
+        if (!ram.occupied(address)) {
+            continue;
+        }
+        try {
+            const Matrix &matrix = ram.at(address);
+            matrixAddresses.push_back(address);
+            terminal << "Matrice disponible a l'adresse RAM " << address << ":\n";
+            output->printMatrix(matrix);
+        } catch (const std::invalid_argument &) {
+            continue;
+        }
+    }
+    if (matrixAddresses.empty()) {
+        terminal << "Entrez ou generez une matrice avant de planifier une operation.\n";
+        return;
+    }
+
+    std::vector<std::pair<OperationName, std::vector<int>>> operations;
+    terminal << "Operations disponibles :\n"
+             << "1. Split (1 matrice)\n"
+             << "2. Fuse (4 matrices)\n"
+             << "3. Rotate (1 matrice)\n"
+             << "4. Add (2 matrices)\n"
+             << "5. Multiply (2 matrices)\n"
+             << "6. CalcDeterminant (1 matrice)\n";
+
+    while (true) {
+        terminal << "Operation a ajouter (q pour terminer) : ";
+        std::string selection;
+        if (!(input >> selection)) {
+            return;
+        }
+        if (selection == "q" || selection == "Q") {
+            break;
+        }
+
+        int choice = 0;
+        OperationName operation = OperationName::Split;
+        if (!parseInteger(selection, choice) || !parseOperationChoice(choice, operation)) {
+            terminal << "Operation invalide : indiquez un numero entre 1 et 6, ou q.\n";
+            continue;
+        }
+
+        std::vector<int> inputLocations;
+        const std::size_t inputCount = requiredInputCount(operation);
+        if (matrixAddresses.size() < inputCount) {
+            terminal << "Cette operation necessite " << inputCount
+                     << " matrice(s), mais seulement " << matrixAddresses.size()
+                     << " est/sont disponible(s).\n";
+            return;
+        }
+        inputLocations.reserve(inputCount);
+        const auto firstInput = matrixAddresses.end() -
+                                static_cast<std::ptrdiff_t>(inputCount);
+        for (auto address = firstInput; address != matrixAddresses.end(); ++address) {
+            inputLocations.push_back(static_cast<int>(*address));
+        }
+        operations.emplace_back(operation, std::move(inputLocations));
+    }
+
+    std::vector<int> operationAddresses;
+    operationAddresses.reserve(operations.size());
+    for (auto &operation : operations) {
+        operationAddresses.push_back(
+            mssInstance->getRam().load(operation.first, operation.second));
+    }
+    for (auto address = operationAddresses.rbegin(); address != operationAddresses.rend();
+         ++address) {
+        mssInstance->getStack().push(*address);
+    }
+    terminal << operations.size() << " operation(s) ajoutee(s) a MSS.\n";
     mssInstance->run();
     if (mssInstance->executionTrace().empty()) {
         terminal << "Aucune operation n'a ete executee par MSS; aucun bilan n'est disponible.\n";
@@ -200,8 +308,9 @@ void UserInputController::run() {
         terminal << "\nMenu principal\n"
                  << "1. Charger une configuration\n"
                  << "2. Creer et sauvegarder une configuration\n"
-                 << "3. Entrer une matrice et executer MSS\n"
-                 << "4. Quitter\n";
+                 << "3. Entrer une matrice\n"
+                 << "4. Executer une operation\n"
+                 << "5. Quitter\n";
         int choice = 0;
         if (!readInteger("Votre choix : ", choice)) {
             return;
@@ -216,9 +325,12 @@ void UserInputController::run() {
                 saveConfiguration();
                 break;
             case 3:
-                execute();
+                createMatrix();
                 break;
             case 4:
+                execute();
+                break;
+            case 5:
                 return;
             default:
                 terminal << "Choix invalide.\n";
