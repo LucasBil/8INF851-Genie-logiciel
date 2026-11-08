@@ -16,7 +16,7 @@ class Cpu {
     /**
      * @brief Construit un processeur virtuel.
      */
-    cpu();
+    Cpu();
     /**
      * @brief Signale que le modèle de coût CPU doit encore être défini.
      * @param operation Opération dont le coût est demandé.
@@ -58,21 +58,8 @@ class Cpu {
      */
     Matrix& calcDeterminant(Matrix& matrix);
 
-    /**
-     * @brief Calcule l'addition associée à la matrice.
-     * @param matrix Matrice concernée par l'opération.
-     * @return Référence à la matrice modifiée.
-     * @throws std::logic_error si le calcul n'est pas implémenté.
-     */
-    Matrix& add(Matrix& matrix);
-
-    /**
-     * @brief Calcule la multiplication associée à la matrice.
-     * @param matrix Matrice concernée par l'opération.
-     * @return Référence à la matrice modifiée.
-     * @throws std::logic_error si le calcul n'est pas implémenté.
-     */
-    Matrix& multiply(Matrix& matrix);
+    Matrix& add(Matrix& matrix, Matrix& matrix_bis);
+    Matrix& multiply(Matrix& matrix, Matrix& matrix_bis);
 
     /**
      * @brief Affiche une matrice dans la sortie standard.
