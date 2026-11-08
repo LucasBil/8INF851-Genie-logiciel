@@ -15,6 +15,7 @@ namespace mss {
 struct Operation {
     OperationName type;
     std::vector<std::size_t> inputLocations;
+    std::vector<std::size_t> outputLocations{}; // Adresses des resultats reservees avant calcul.
 };
 
 } // namespace mss

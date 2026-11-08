@@ -1,0 +1,12 @@
+Create 1
+Delete 1
+Split 1
+Fuse 1
+Load 1
+Unload 1
+Permutations 1
+FormuleColumn 1
+Rotate 1
+Add 1
+Multiply 1
+CalcDeterminant 1
