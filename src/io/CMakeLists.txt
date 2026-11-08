@@ -1,4 +1,9 @@
-add_library(mss_io UserIOController.cpp)
+add_library(mss_io
+    AbstractInputController.cpp
+    DemoInputController.cpp
+    UserOutputController.cpp
+    UserInputController.cpp
+)
 
 target_include_directories(mss_io PUBLIC "${PROJECT_SOURCE_DIR}/include")
 target_link_libraries(mss_io PUBLIC mss_core)

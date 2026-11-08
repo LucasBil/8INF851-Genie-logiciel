@@ -13,6 +13,9 @@ namespace mss {
 class Cpu {
   public:
 
+    /**
+     * @brief Construit un processeur virtuel.
+     */
     Cpu();
     /**
      * @brief Signale que le modèle de coût CPU doit encore être défini.
@@ -58,6 +61,10 @@ class Cpu {
     Matrix& add(Matrix& matrix, Matrix& matrix_bis);
     Matrix& multiply(Matrix& matrix, Matrix& matrix_bis);
 
+    /**
+     * @brief Affiche une matrice dans la sortie standard.
+     * @param matrix Matrice à afficher.
+     */
     void printMatrix(Matrix& matrix);
 
 };

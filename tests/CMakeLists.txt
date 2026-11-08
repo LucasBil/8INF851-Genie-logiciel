@@ -5,10 +5,15 @@ add_executable(mss_tests
     core/CpuTest.cpp
     core/RamTest.cpp
     core/OperationTest.cpp
-    io/UserIOControllerTest.cpp
+    io/AbstractInputControllerTest.cpp
+    io/UserInputControllerTest.cpp
+    io/DemoInputControllerTest.cpp
+    io/UserOutputControllerTest.cpp
+    serializer/ConfigurationSerializerTest.cpp
+    serializer/SerializerToolTest.cpp
 )
 
-target_link_libraries(mss_tests PRIVATE mss_core mss_io GTest::gtest_main)
+target_link_libraries(mss_tests PRIVATE mss_core mss_io mss_serializer GTest::gtest_main)
 target_compile_options(mss_tests PRIVATE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall;-Wextra;-Wpedantic;-Werror>
 )

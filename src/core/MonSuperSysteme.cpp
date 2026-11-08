@@ -7,16 +7,20 @@ namespace mss {
 
 void MonSuperSysteme::loadInitialMatrix(Matrix matrix) {
     if (ram.size() != 0) {
-        throw std::logic_error("La matrice initiale a déjà été chargée.");
+        throw std::logic_error("La matrice initiale a deja ete chargee.");
     }
     ram.store(std::move(matrix));
 }
 
 const Matrix &MonSuperSysteme::initialMatrix() const {
     if (ram.size() == 0) {
-        throw std::logic_error("Aucune matrice initiale n'a été chargée.");
+        throw std::logic_error("Aucune matrice initiale n'a ete chargee.");
     }
     return ram.at(0);
+}
+
+const std::vector<OperationName> &MonSuperSysteme::executionTrace() const noexcept {
+    return trace;
 }
 
 const Cpu &MonSuperSysteme::cpu() const noexcept {

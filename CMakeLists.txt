@@ -23,7 +23,7 @@ add_subdirectory(src/io)
 add_subdirectory(src/serializer)
 
 add_executable(mss src/main.cpp)
-target_link_libraries(mss PRIVATE mss_io mss_core)
+target_link_libraries(mss PRIVATE mss_io mss_core mss_serializer)
 target_compile_options(mss PRIVATE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall;-Wextra;-Wpedantic;-Werror>
 )

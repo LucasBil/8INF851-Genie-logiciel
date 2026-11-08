@@ -33,6 +33,11 @@ class MonSuperSysteme {
     const Matrix &initialMatrix() const;
 
     /**
+     * @brief Retourne la trace des opérations exécutées.
+     */
+    const std::vector<OperationName> &executionTrace() const noexcept;
+
+    /**
      * @brief Retourne le processeur associé au système.
      * @return Processeur du système.
      */
