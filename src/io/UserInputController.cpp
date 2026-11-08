@@ -71,6 +71,7 @@ const char *operationName(OperationName operation) {
     case OperationName::Add: return "Add";
     case OperationName::Multiply: return "Multiply";
     case OperationName::CalcDeterminant: return "CalcDeterminant";
+    case OperationName::Print: return "Print";
     }
     throw std::logic_error("Nom d'operation inconnu.");
 }

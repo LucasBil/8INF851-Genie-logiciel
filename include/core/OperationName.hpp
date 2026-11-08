@@ -28,8 +28,8 @@ enum class OperationName {
     Add,
     /// Multiplication de matrices.
     Multiply,
-    /// Calcul du déterminant.
-    CalcDeterminant
+    CalcDeterminant,
+    Print // Extension: affichage d'un resultat pret.
 };
 
 } // namespace mss

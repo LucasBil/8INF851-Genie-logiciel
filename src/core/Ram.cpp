@@ -194,6 +194,74 @@ int Ram::fuse(const std::vector<int> &addresses) {
     return load(Matrix(std::move(data)));
 }
 
+std::vector<int> Ram::reserve(std::size_t count) {
+    if (count > static_cast<std::size_t>(std::numeric_limits<int>::max()) - memory.size()) {
+        throw std::overflow_error("Espace d'adressage RAM depasse.");
+    }
+    const std::size_t first = memory.size();
+    memory.resize(first + count);
+    std::vector<int> addresses;
+    addresses.reserve(count);
+    for (std::size_t i = 0; i < count; ++i) {
+        memory[first + i] = Cell(Pending{});
+        addresses.push_back(static_cast<int>(first + i));
+    }
+    return addresses;
+}
+
+bool Ram::isReady(std::size_t address) const {
+    if (address >= memory.size()) throw std::out_of_range("Adresse RAM inexistante.");
+    return memory[address] && std::holds_alternative<Matrix>(*memory[address]);
+}
+
+void Ram::storeResult(int address, Matrix result) {
+    const auto pos = checkedAddress(address);
+    if (pos >= memory.size() || !memory[pos] ||
+        !std::holds_alternative<Pending>(*memory[pos])) {
+        throw std::logic_error("Le resultat doit etre ecrit dans une adresse reservee.");
+    }
+    memory[pos] = Cell(std::move(result));
+}
+
+std::vector<Matrix> Ram::splitMatrix(int address) const {
+    const Matrix &matrix = at(checkedAddress(address));
+    if (matrix.rows() != matrix.columns() || matrix.rows() < 2 ||
+        (matrix.rows() & (matrix.rows() - 1)) != 0) {
+        throw std::invalid_argument("splitMatrix exige une matrice carree de taille 2^n >= 2.");
+    }
+    const std::size_t half = matrix.rows() / 2;
+    std::vector<Matrix> blocks;
+    blocks.reserve(4);
+    for (std::size_t br = 0; br < 2; ++br) {
+        for (std::size_t bc = 0; bc < 2; ++bc) {
+            std::vector<std::vector<double>> data(half, std::vector<double>(half));
+            for (std::size_t r = 0; r < half; ++r)
+                for (std::size_t c = 0; c < half; ++c)
+                    data[r][c] = matrix.at(br * half + r, bc * half + c);
+            blocks.emplace_back(std::move(data));
+        }
+    }
+    return blocks;
+}
+
+Matrix Ram::fuseMatrices(const std::vector<int> &addresses) const {
+    if (addresses.size() != 4) throw std::invalid_argument("fuseMatrices exige 4 blocs.");
+    std::vector<Matrix> blocks;
+    for (int a : addresses) blocks.push_back(at(checkedAddress(a)));
+    const std::size_t n = blocks.front().rows();
+    if (n == 0 || n > std::numeric_limits<std::size_t>::max() / 2)
+        throw std::invalid_argument("Dimension invalide.");
+    for (const Matrix &b : blocks)
+        if (b.rows() != n || b.columns() != n)
+            throw std::invalid_argument("Blocs de dimensions incompatibles.");
+    std::vector<std::vector<double>> result(2 * n, std::vector<double>(2 * n));
+    for (std::size_t i = 0; i < 4; ++i)
+        for (std::size_t r = 0; r < n; ++r)
+            for (std::size_t c = 0; c < n; ++c)
+                result[(i / 2) * n + r][(i % 2) * n + c] = blocks[i].at(r, c);
+    return Matrix(std::move(result));
+}
+
 int Ram::getOperationCost(Operation &operation) const {
     (void)operation;
     throw std::logic_error("Le modele de cout RAM n'a pas encore ete specifie.");

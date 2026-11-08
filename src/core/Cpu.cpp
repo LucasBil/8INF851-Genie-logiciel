@@ -1,6 +1,7 @@
 #include "core/Cpu.hpp"
 
 #include <stdexcept>
+#include <utility>
 
 namespace mss {
 
@@ -38,14 +39,24 @@ Matrix& Cpu::rotate(Matrix& matrix) {
 }
 
 Matrix& Cpu::add(Matrix& matrix, Matrix& matrix_bis){
-    (void)matrix_bis;
-    throw std::logic_error("Calcul non implémenté.");
+    requireSquare2(matrix);
+    requireSquare2(matrix_bis);
+    Matrix result({{matrix.at(0, 0) + matrix_bis.at(0, 0),
+                    matrix.at(0, 1) + matrix_bis.at(0, 1)},
+                   {matrix.at(1, 0) + matrix_bis.at(1, 0),
+                    matrix.at(1, 1) + matrix_bis.at(1, 1)}});
+    matrix = std::move(result);
     return matrix;
 }
 
 Matrix& Cpu::multiply(Matrix& matrix, Matrix& matrix_bis){
-    (void)matrix_bis;
-    throw std::logic_error("Calcul non implémenté.");
+    requireSquare2(matrix);
+    requireSquare2(matrix_bis);
+    Matrix result({{matrix.at(0, 0) * matrix_bis.at(0, 0) + matrix.at(0, 1) * matrix_bis.at(1, 0),
+                    matrix.at(0, 0) * matrix_bis.at(0, 1) + matrix.at(0, 1) * matrix_bis.at(1, 1)},
+                   {matrix.at(1, 0) * matrix_bis.at(0, 0) + matrix.at(1, 1) * matrix_bis.at(1, 0),
+                    matrix.at(1, 0) * matrix_bis.at(0, 1) + matrix.at(1, 1) * matrix_bis.at(1, 1)}});
+    matrix = std::move(result);
     return matrix;
 }
 Matrix& Cpu::calcDeterminant(Matrix& matrix){

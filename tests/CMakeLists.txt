@@ -4,6 +4,7 @@ add_executable(mss_tests
     core/MonSuperSystemeTest.cpp
     core/CpuTest.cpp
     core/RamTest.cpp
+    core/RecursiveOperationsTest.cpp
     core/OperationTest.cpp
     io/AbstractInputControllerTest.cpp
     io/UserInputControllerTest.cpp

@@ -5,7 +5,7 @@
 #include "core/Ram.hpp"
 
 #include <iostream>
-#include <stack>
+#include <deque>
 #include <vector>
 
 
@@ -67,6 +67,15 @@ class MonSuperSysteme {
      */
     void run();
 
+    // Charger une matrice dans la RAM du simulateur.
+    int loadMatrix(Matrix matrix);
+    // Enregistre une instruction et reserve ses adresses de sortie.
+    // Split : 4, Print : 0, les autres operations supportees : 1.
+    std::vector<int> loadOperation(OperationName type, const std::vector<int> &inputs,
+                                   const std::vector<int> &outputs = {});
+    const Matrix &resultAt(int address) const;
+    std::size_t pendingOperations() const noexcept;
+
     /**
      * @brief retourne un version écrite de l'historique des operations effecutées
      * @return string
@@ -76,7 +85,9 @@ class MonSuperSysteme {
 
   private:
 
-    std::stack<int> stack;
+    std::deque<int> queue;
+    int nextReady() const;
+    void expand(const Operation &operation);
     std::vector<OperationName> trace; // Taille du tableau à spécifier
 
     //Configuration configuration;
