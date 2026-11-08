@@ -6,7 +6,7 @@ namespace mss {
 
 int Cpu::getOperationCost(Operation& operation) const {
     (void)operation;
-    throw std::logic_error("Le modèle de coût CPU n'a pas encore été spécifié.");
+    throw std::logic_error("Le modele de cout CPU n'a pas encore ete specifie.");
 }
 
 void requireSquare2(const Matrix& m) {
@@ -35,12 +35,12 @@ Matrix& Cpu::rotate(Matrix& matrix) {
 }
 
 Matrix& Cpu::add(Matrix& matrix){
-    throw std::logic_error("Calcul non implémenté.");
+    throw std::logic_error("Calcul non implemente.");
     return matrix;
 }
 
 Matrix& Cpu::multiply(Matrix& matrix){
-    throw std::logic_error("Calcul non implémenté.");
+    throw std::logic_error("Calcul non implemente.");
     return matrix;
 }
 Matrix& Cpu::calcDeterminant(Matrix& matrix){

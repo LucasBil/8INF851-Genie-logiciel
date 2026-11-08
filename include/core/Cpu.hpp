@@ -13,6 +13,9 @@ namespace mss {
 class Cpu {
   public:
 
+    /**
+     * @brief Construit un processeur virtuel.
+     */
     cpu();
     /**
      * @brief Signale que le modèle de coût CPU doit encore être défini.
@@ -55,9 +58,26 @@ class Cpu {
      */
     Matrix& calcDeterminant(Matrix& matrix);
 
+    /**
+     * @brief Calcule l'addition associée à la matrice.
+     * @param matrix Matrice concernée par l'opération.
+     * @return Référence à la matrice modifiée.
+     * @throws std::logic_error si le calcul n'est pas implémenté.
+     */
     Matrix& add(Matrix& matrix);
+
+    /**
+     * @brief Calcule la multiplication associée à la matrice.
+     * @param matrix Matrice concernée par l'opération.
+     * @return Référence à la matrice modifiée.
+     * @throws std::logic_error si le calcul n'est pas implémenté.
+     */
     Matrix& multiply(Matrix& matrix);
 
+    /**
+     * @brief Affiche une matrice dans la sortie standard.
+     * @param matrix Matrice à afficher.
+     */
     void printMatrix(Matrix& matrix);
 
 };
