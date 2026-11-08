@@ -36,8 +36,17 @@ class Ram {
     const Operation &operationAt(std::size_t address) const;
     bool occupied(std::size_t address) const noexcept;
 
+    // Un resultat peut etre reserve avant son calcul (etat Pending).
+    std::vector<int> reserve(std::size_t count = 1);
+    bool isReady(std::size_t address) const;
+    void storeResult(int address, Matrix result);
+    // Ces operations ne modifient pas les matrices sources (partageables).
+    std::vector<Matrix> splitMatrix(int address) const;
+    Matrix fuseMatrices(const std::vector<int> &addresses) const;
+
   private:
-    using Cell = std::variant<Matrix, Operation>;
+    struct Pending {};
+    using Cell = std::variant<Matrix, Operation, Pending>;
     std::vector<std::optional<Cell>> memory;
 
     std::size_t findContiguous(std::size_t count) const;

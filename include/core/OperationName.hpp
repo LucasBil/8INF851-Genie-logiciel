@@ -17,7 +17,8 @@ enum class OperationName {
     Rotate,
     Add,
     Multiply,
-    CalcDeterminant
+    CalcDeterminant,
+    Print // Extension: affichage d'un resultat pret.
 };
 
 } // namespace mss
