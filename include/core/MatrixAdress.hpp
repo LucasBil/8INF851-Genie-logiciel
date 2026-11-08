@@ -14,6 +14,10 @@ namespace mss {
  */
 class MatrixAdress : AddressSlot {
   public:
+    /**
+     * @brief Retourne le type de cette adresse.
+     * @return Type d'adresse de matrice.
+     */
     AdressType GetType();
 
   private:

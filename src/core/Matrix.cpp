@@ -14,7 +14,7 @@ Matrix::Matrix(std::vector<std::vector<double>> matrixValues) : values(std::move
     for (const auto &row : values) {
         if (row.size() != expectedColumns) {
             throw std::invalid_argument(
-                "Toutes les lignes de la matrice doivent avoir la même taille.");
+                "Toutes les lignes de la matrice doivent avoir la meme taille.");
         }
     }
 }
