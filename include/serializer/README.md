@@ -1,3 +1,3 @@
 # Interfaces de sérialisation
 
-La sérialisation JSON est prévue, mais aucune interface de sauvegarde/chargement n'est ajoutée tant que les paramètres à conserver dans une configuration CPU/RAM ne sont pas définis.
+Le module expose les classes `SerializerTool`, `FileExplorer` et `ConfigurationSerializer`. Les configurations texte sont sauvegardees dans `configurations/` en fichiers `.txt`; chaque ligne contient un nom d'operation et son cout. Les index de chargement sont zero-based et tries alphabetiquement.
