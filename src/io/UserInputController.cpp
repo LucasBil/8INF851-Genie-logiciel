@@ -33,10 +33,8 @@ bool parseOperationChoice(int choice, OperationName &operation) {
     switch (choice) {
     case 1: operation = OperationName::Split; return true;
     case 2: operation = OperationName::Fuse; return true;
-    case 3: operation = OperationName::Rotate; return true;
-    case 4: operation = OperationName::Add; return true;
-    case 5: operation = OperationName::Multiply; return true;
-    case 6: operation = OperationName::CalcDeterminant; return true;
+    case 3: operation = OperationName::Add; return true;
+    case 4: operation = OperationName::Multiply; return true;
     default: return false;
     }
 }
@@ -44,8 +42,6 @@ bool parseOperationChoice(int choice, OperationName &operation) {
 std::size_t requiredInputCount(OperationName operation) {
     switch (operation) {
     case OperationName::Split:
-    case OperationName::Rotate:
-    case OperationName::CalcDeterminant:
         return 1;
     case OperationName::Fuse:
         return 4;
@@ -204,16 +200,15 @@ void UserInputController::createMatrix() {
         }
     }
 
-    auto &ram = mssInstance->getRam();
-    std::size_t address = 0;
+    int address = 0;
     Matrix matrix(std::move(values));
-    if (ram.size() == 0) {
+    if (mssInstance->getRam().size() == 0) {
         mssInstance->loadInitialMatrix(std::move(matrix));
     } else {
-        address = ram.store(std::move(matrix));
+        address = mssInstance->loadMatrix(std::move(matrix));
     }
     terminal << "Matrice creee a l'adresse RAM " << address << ".\n";
-    output->printMatrix(ram.at(address));
+    output->printMatrix(mssInstance->resultAt(address));
 }
 
 void UserInputController::execute() {
@@ -222,14 +217,14 @@ void UserInputController::execute() {
         return;
     }
 
-    auto &ram = mssInstance->getRam();
+    const auto &ram = mssInstance->getRam();
     std::vector<std::size_t> matrixAddresses;
     for (std::size_t address = 0; address < ram.size(); ++address) {
         if (!ram.occupied(address)) {
             continue;
         }
         try {
-            const Matrix &matrix = ram.at(address);
+            const Matrix &matrix = mssInstance->resultAt(static_cast<int>(address));
             matrixAddresses.push_back(address);
             terminal << "Matrice disponible a l'adresse RAM " << address << ":\n";
             output->printMatrix(matrix);
@@ -246,10 +241,8 @@ void UserInputController::execute() {
     terminal << "Operations disponibles :\n"
              << "1. Split (1 matrice)\n"
              << "2. Fuse (4 matrices)\n"
-             << "3. Rotate (1 matrice)\n"
-             << "4. Add (2 matrices)\n"
-             << "5. Multiply (2 matrices)\n"
-             << "6. CalcDeterminant (1 matrice)\n";
+             << "3. Add (2 matrices)\n"
+             << "4. Multiply (2 matrices)\n";
 
     while (true) {
         terminal << "Operation a ajouter (q pour terminer) : ";
@@ -264,7 +257,7 @@ void UserInputController::execute() {
         int choice = 0;
         OperationName operation = OperationName::Split;
         if (!parseInteger(selection, choice) || !parseOperationChoice(choice, operation)) {
-            terminal << "Operation invalide : indiquez un numero entre 1 et 6, ou q.\n";
+            terminal << "Operation invalide : indiquez un numero entre 1 et 4, ou q.\n";
             continue;
         }
 
@@ -285,15 +278,8 @@ void UserInputController::execute() {
         operations.emplace_back(operation, std::move(inputLocations));
     }
 
-    std::vector<int> operationAddresses;
-    operationAddresses.reserve(operations.size());
-    for (auto &operation : operations) {
-        operationAddresses.push_back(
-            mssInstance->getRam().load(operation.first, operation.second));
-    }
-    for (auto address = operationAddresses.rbegin(); address != operationAddresses.rend();
-         ++address) {
-        mssInstance->getStack().push(*address);
+    for (const auto &operation : operations) {
+        mssInstance->loadOperation(operation.first, operation.second);
     }
     terminal << operations.size() << " operation(s) ajoutee(s) a MSS.\n";
     mssInstance->run();

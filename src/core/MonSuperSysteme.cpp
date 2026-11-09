@@ -18,6 +18,7 @@ const Matrix &MonSuperSysteme::initialMatrix() const {
 
 const std::vector<OperationName> &MonSuperSysteme::executionTrace() const noexcept { return trace; }
 const Cpu &MonSuperSysteme::cpu() const noexcept { return cpuInstance; }
+Ram &MonSuperSysteme::getRam() noexcept { return ram; }
 int MonSuperSysteme::loadMatrix(Matrix matrix) { return ram.load(std::move(matrix)); }
 const Matrix &MonSuperSysteme::resultAt(int address) const {
     if (address < 0) throw std::out_of_range("Adresse negative.");
@@ -95,45 +96,59 @@ void MonSuperSysteme::expand(const Operation &op) {
 
 void MonSuperSysteme::execute(int memoryAddress) {
     if (memoryAddress < 0) throw std::out_of_range("Adresse negative.");
+
     const Operation op = ram.operationAt(static_cast<std::size_t>(memoryAddress));
-    auto addr = [](std::size_t n) { return static_cast<int>(n); };
+
     switch (op.type) {
         case OperationName::Split: {
-            auto quadrants = ram.splitMatrix(addr(op.inputLocations.at(0)));
+            const int inputAddress = static_cast<int>(op.inputLocations.at(0));
+            auto quadrants = ram.splitMatrix(inputAddress);
             for (std::size_t i = 0; i < 4; ++i)
-                ram.storeResult(addr(op.outputLocations.at(i)), std::move(quadrants[i]));
+                ram.storeResult(static_cast<int>(op.outputLocations.at(i)),
+                                std::move(quadrants[i]));
             break;
         }
-        case OperationName::Fuse:
-            ram.storeResult(addr(op.outputLocations.at(0)),
-                ram.fuseMatrices({addr(op.inputLocations.at(0)), addr(op.inputLocations.at(1)),
-                                  addr(op.inputLocations.at(2)), addr(op.inputLocations.at(3))}));
+        case OperationName::Fuse: {
+            std::vector<int> inputAddresses;
+            inputAddresses.reserve(op.inputLocations.size());
+            for (std::size_t address : op.inputLocations)
+                inputAddresses.push_back(static_cast<int>(address));
+
+            Matrix result = ram.fuseMatrices(inputAddresses);
+            result.printMatrix();
+            ram.storeResult(static_cast<int>(op.outputLocations.at(0)), std::move(result));
             break;
+        }
         case OperationName::Print: {
-            const Matrix &m = ram.at(op.inputLocations.at(0));
-            std::cout << "Resultat @ " << op.inputLocations.at(0) << " (" << m.rows() << "x" << m.columns() << "):\n";
-            for (std::size_t i = 0; i < m.rows(); ++i) {
-                for (std::size_t j = 0; j < m.columns(); ++j)
-                    std::cout << m.at(i, j) << (j + 1 == m.columns() ? '\n' : ' ');
-            }
+            //const std::size_t inputAddress = op.inputLocations.at(0);
+            //const Matrix &matrix = ram.at(inputAddress);
             break;
         }
         case OperationName::Add:
         case OperationName::Multiply: {
-            Matrix a = ram.at(op.inputLocations.at(0));
-            Matrix b = ram.at(op.inputLocations.at(1));
-            if (a.rows() != a.columns() || b.rows() != b.columns() ||
-                a.rows() != b.rows() || (a.rows() & (a.rows() - 1)) != 0)
+            Matrix first = ram.at(op.inputLocations.at(0));
+            Matrix second = ram.at(op.inputLocations.at(1));
+            if (first.rows() != first.columns() || second.rows() != second.columns() ||
+                first.rows() != second.rows() || (first.rows() & (first.rows() - 1)) != 0) {
                 throw std::invalid_argument("Matrices carrees de taille 2^n et dimensions identiques requises.");
-            if (a.rows() > 2) {
+            }
+            if (first.rows() > 2) {
                 expand(op);
                 ram.remove(memoryAddress);
                 return; // La decomposition n'est pas une instruction de calcul executee.
             }
-            if (a.rows() != 2) throw std::invalid_argument("CPU exige une matrice 2x2.");
-            if (op.type == OperationName::Add) cpuInstance.add(a, b);
-            else cpuInstance.multiply(a, b);
-            ram.storeResult(addr(op.outputLocations.at(0)), std::move(a));
+            if (first.rows() != 2) {
+                throw std::invalid_argument("CPU exige une matrice 2x2.");
+            }
+
+            Matrix result = op.type == OperationName::Add
+                                ? cpuInstance.add(first, second)
+                                : cpuInstance.multiply(first, second);
+
+            const int outputAddress = static_cast<int>(op.outputLocations.at(0));
+            std::cout << "Adresse de la sortie : " << outputAddress << std::endl;
+            result.printMatrix();
+            ram.storeResult(outputAddress, std::move(result));
             break;
         }
         default: throw std::invalid_argument("Operation non prise en charge.");

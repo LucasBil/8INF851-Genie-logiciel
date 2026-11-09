@@ -14,7 +14,7 @@
 TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     mss::SerializerTool serializer;
     mss::Configuration configuration;
-    configuration.set(mss::OperationName::Rotate, 4);
+    configuration.set(mss::OperationName::Split, 4);
     const auto uniqueId = std::chrono::steady_clock::now().time_since_epoch().count();
     const std::string name = "user_input_test_" + std::to_string(uniqueId);
     serializer.saveConfiguration(configuration, name);
@@ -30,7 +30,7 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     }
 
     std::istringstream input("1 " + std::to_string(configurationIndex) +
-                             " q 3 2 2 1 2 3 4 4 3 q 5");
+                             " q 3 2 2 1 2 3 4 3 2 2 5 6 7 8 4 6 1 q n 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;
@@ -40,15 +40,27 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     std::filesystem::remove(std::filesystem::path("configurations") / (name + ".txt"));
 
     EXPECT_DOUBLE_EQ(system.initialMatrix().at(0, 0), 1.0);
-    EXPECT_EQ(system.getRam().operationAt(1).type, mss::OperationName::Rotate);
+    ASSERT_EQ(system.executionTrace().size(), 1);
+    EXPECT_EQ(system.executionTrace().front(), mss::OperationName::Split);
+    EXPECT_EQ(system.pendingOperations(), 0);
     EXPECT_NE(terminal.str().find("Matrice creee a l'adresse RAM 0."),
+              std::string::npos);
+    EXPECT_NE(terminal.str().find("Matrice creee a l'adresse RAM 1."),
               std::string::npos);
     EXPECT_NE(terminal.str().find("Matrice disponible a l'adresse RAM 0:"),
               std::string::npos);
+    EXPECT_NE(terminal.str().find("Matrice disponible a l'adresse RAM 1:"),
+              std::string::npos);
     EXPECT_EQ(terminal.str().find("Adresse RAM de la matrice"), std::string::npos);
+    EXPECT_NE(terminal.str().find("3. Add (2 matrices)"), std::string::npos);
+    EXPECT_NE(terminal.str().find("4. Multiply (2 matrices)"), std::string::npos);
+    EXPECT_EQ(terminal.str().find("Rotate (1 matrice)"), std::string::npos);
+    EXPECT_EQ(terminal.str().find("CalcDeterminant"), std::string::npos);
+    EXPECT_NE(terminal.str().find("Operation invalide : indiquez un numero entre 1 et 4, ou q."),
+              std::string::npos);
     EXPECT_NE(terminal.str().find("1 operation(s) ajoutee(s) a MSS."),
               std::string::npos);
-    EXPECT_NE(terminal.str().find("Aucune operation n'a ete executee par MSS"),
+    EXPECT_NE(terminal.str().find("Trace d'execution :"),
               std::string::npos);
 }
 

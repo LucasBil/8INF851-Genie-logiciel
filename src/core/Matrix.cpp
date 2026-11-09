@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <utility>
+#include <iostream>
 
 namespace mss {
 
@@ -29,6 +30,14 @@ std::size_t Matrix::columns() const noexcept {
 
 double Matrix::at(std::size_t row, std::size_t column) const {
     return values.at(row).at(column);
+}
+
+void Matrix::printMatrix(){
+    for (std::size_t row = 0; row < rows(); ++row) {
+        for (std::size_t column = 0; column < columns(); ++column) {
+            std::cout << this->at(row, column) << (column + 1 == columns() ? '\n' : ' ');
+        }
+    }
 }
 
 } // namespace mss
