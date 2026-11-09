@@ -1,5 +1,5 @@
 add_library(mss_core
-    Configuration.cpp
+    "${PROJECT_SOURCE_DIR}/src/configuration/Configuration.cpp"
     Matrix.cpp
     MonSuperSysteme.cpp
     Cpu.cpp

@@ -13,7 +13,14 @@ namespace mss {
  * @note L'exécution des opérations attend la confirmation de leurs règles.
  */
 struct Operation {
+    /**
+     * @brief Type de l'opération.
+     */
     OperationName type;
+
+    /**
+     * @brief Adresses mémoire des données d'entrée de l'opération.
+     */
     std::vector<std::size_t> inputLocations;
     std::vector<std::size_t> outputLocations{}; // Adresses des resultats reservees avant calcul.
 };

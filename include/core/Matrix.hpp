@@ -38,6 +38,9 @@ class Matrix {
      */
     double at(std::size_t row, std::size_t column) const;
 
+
+    void printMatrix();
+
   private:
     std::vector<std::vector<double>> values;
 };

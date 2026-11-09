@@ -4,7 +4,6 @@
 #include "core/Matrix.hpp"
 #include "core/Ram.hpp"
 
-#include <iostream>
 #include <deque>
 #include <vector>
 
@@ -42,6 +41,12 @@ class MonSuperSysteme {
      * @return Processeur du système.
      */
     const Cpu &cpu() const noexcept;
+
+    /**
+     * @brief Retourne la RAM du système.
+     * @return Référence modifiable à la RAM.
+     */
+    Ram &getRam() noexcept;
 
     /**
      * @brief execute l'operation passée en argument avec les adresses mémoires données
