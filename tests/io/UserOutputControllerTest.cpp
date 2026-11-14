@@ -13,21 +13,27 @@
 
 TEST(UserOutputControllerTest, PrintsTraceAndFindsTheLowestCostConfiguration) {
     mss::Configuration firstConfiguration;
-    firstConfiguration.set(mss::OperationName::Rotate, 5);
+    firstConfiguration.set(mss::OperationName::Split, 5);
     firstConfiguration.set(mss::OperationName::Add, 10);
     mss::Configuration secondConfiguration;
-    secondConfiguration.set(mss::OperationName::Rotate, 2);
+    secondConfiguration.set(mss::OperationName::Split, 2);
     secondConfiguration.set(mss::OperationName::Add, 3);
 
     std::istringstream input("n");
     std::ostringstream output;
     mss::UserOutputController controller({firstConfiguration, secondConfiguration}, input, output);
-    controller.printTrace({mss::OperationName::Rotate, mss::OperationName::Add});
+    controller.printTrace({mss::OperationName::Split, mss::OperationName::Add});
 
-    EXPECT_NE(output.str().find("1. Rotate"), std::string::npos);
+    EXPECT_NE(output.str().find("1. Split (RAM)"), std::string::npos);
+    EXPECT_NE(output.str().find("2. Add (CPU)"), std::string::npos);
     EXPECT_NE(output.str().find("Configuration 1 : 15"), std::string::npos);
+    EXPECT_NE(output.str().find("Sous-total RAM : 5"), std::string::npos);
+    EXPECT_NE(output.str().find("Sous-total CPU : 10"), std::string::npos);
     EXPECT_NE(output.str().find("Configuration 2 : 5"), std::string::npos);
-    EXPECT_NE(output.str().find("Meilleure configuration : 2 (cout : 5)"), std::string::npos);
+    EXPECT_NE(output.str().find("Sous-total RAM : 2"), std::string::npos);
+    EXPECT_NE(output.str().find("Sous-total CPU : 3"), std::string::npos);
+    EXPECT_NE(output.str().find("Meilleure configuration : 2 (cout : 5)"),
+              std::string::npos);
 }
 
 TEST(UserOutputControllerTest, SavesTraceWhenTheUserAccepts) {
