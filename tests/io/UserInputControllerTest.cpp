@@ -186,6 +186,7 @@ TEST(UserInputControllerTest, SeparatesMenuChoicesWithWhitespace) {
     EXPECT_NE(terminal.str().find(
                   "Menu principal\n"
                   "--------------------\n"
+                  "0. Demonstration automatique\n\n"
                   "1. Charger une configuration\n\n"
                   "2. Creer et sauvegarder une configuration\n\n"
                   "3. Entrer une matrice\n\n"
