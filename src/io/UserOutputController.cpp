@@ -190,7 +190,12 @@ void UserOutputController::outputTrace(const std::vector<OperationName> &trace) 
         throw std::runtime_error("Lecture du nom de fichier impossible.");
     }
 
-    std::ofstream file(fileName);
+    outputTrace(trace, std::filesystem::path(fileName));
+}
+
+void UserOutputController::outputTrace(const std::vector<OperationName> &trace,
+                                       const std::filesystem::path &filePath) {
+    std::ofstream file(filePath);
     if (!file) {
         throw std::runtime_error("Impossible d'ouvrir le fichier de sauvegarde.");
     }
@@ -203,6 +208,7 @@ void UserOutputController::outputTrace(const std::vector<OperationName> &trace) 
         throw std::runtime_error("Ecriture de la trace impossible.");
     }
     output << "Trace sauvegardee.\n";
+    output << "Fichier : " << filePath.string() << '\n';
 }
 
 } // namespace mss

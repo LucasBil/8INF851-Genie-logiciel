@@ -2,6 +2,7 @@
 
 #include "core/Matrix.hpp"
 #include "core/MonSuperSysteme.hpp"
+#include "io/DemoInputController.hpp"
 #include "io/UserOutputController.hpp"
 #include "serializer/SerializerTool.hpp"
 
@@ -291,6 +292,8 @@ void UserInputController::run() {
     while (true) {
         terminal << "\nMenu principal\n"
                  << "--------------------\n"
+                 << "0. Demonstration automatique\n"
+                 << '\n'
                  << "1. Charger une configuration\n"
                  << '\n'
                  << "2. Creer et sauvegarder une configuration\n"
@@ -307,6 +310,12 @@ void UserInputController::run() {
 
         try {
             switch (choice) {
+            case 0: {
+                MonSuperSysteme demoSystem;
+                DemoInputController demo(*serializer, *output, demoSystem);
+                demo.run();
+                break;
+            }
             case 1:
                 loadConfiguration();
                 break;

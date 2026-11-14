@@ -3,6 +3,7 @@
 #include "configuration/Configuration.hpp"
 #include "core/Matrix.hpp"
 
+#include <filesystem>
 #include <iosfwd>
 #include <vector>
 
@@ -45,6 +46,12 @@ class UserOutputController {
      * @brief Enregistre la trace dans le fichier indiqué par l'utilisateur.
      */
     void outputTrace(const std::vector<OperationName> &trace);
+
+    /**
+     * @brief Enregistre la trace dans le chemin fourni par l'appelant.
+     */
+    void outputTrace(const std::vector<OperationName> &trace,
+                     const std::filesystem::path &filePath);
 
   private:
     std::vector<Configuration> configurations;
