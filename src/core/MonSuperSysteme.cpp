@@ -58,6 +58,8 @@ std::vector<int> MonSuperSysteme::loadOperation(OperationName type,
         case OperationName::Split: inputCount = 1; outputCount = 4; break;
         case OperationName::Fuse: inputCount = 4; break;
         case OperationName::Print: inputCount = 1; outputCount = 0; break;
+        case OperationName::Clean: inputCount = 0; outputCount = 0; break;
+        case OperationName::Look: inputCount = 1; outputCount = 0; break;
         default: throw std::invalid_argument("Operation non prise en charge par ce moteur.");
     }
     if (inputs.size() != inputCount) throw std::invalid_argument("Nombre d'entrees incorrect.");
@@ -89,12 +91,28 @@ std::vector<int> MonSuperSysteme::loadInternalOperation(OperationName type,
 }
 
 int MonSuperSysteme::nextReady() const {
+    // Clean est une barriere de nettoyage : les operations de calcul (y compris
+    // celles ajoutees par decomposition recursive) sont terminees en premier.
+    // On conserve une instruction Clean en attente tant qu'il reste du travail.
     for (int address : queue) {
         const Operation &op = ram.operationAt(static_cast<std::size_t>(address));
+        if (op.type == OperationName::Clean) continue;
+        // Look inspecte meme une reservation Pending : pas besoin d'un resultat pret.
+        if (op.type == OperationName::Look) return address;
         bool ready = true;
         for (std::size_t input : op.inputLocations)
             if (!ram.isReady(input)) { ready = false; break; }
         if (ready) return address;
+    }
+    for (int address : queue) {
+        if (ram.operationAt(static_cast<std::size_t>(address)).type == OperationName::Clean) {
+            // Une operation encore en attente de ses donnees serait un interblocage.
+            const bool hasWork = std::any_of(queue.begin(), queue.end(), [&](int candidate) {
+                return ram.operationAt(static_cast<std::size_t>(candidate)).type != OperationName::Clean;
+            });
+            if (!hasWork) return address;
+            break;
+        }
     }
     throw std::runtime_error("Interblocage : aucune operation n'a ses entrees disponibles.");
 }
@@ -229,6 +247,14 @@ void MonSuperSysteme::execute(int memoryAddress) {
         }
         case OperationName::Print:
             // L'affichage appartient au controleur de sortie.
+            break;
+        case OperationName::Look:
+            ram.look(addressAsInt(op.inputLocations.at(0)));
+            break;
+        case OperationName::Clean:
+            // Supprime uniquement les temporaires sans references encore utiles.
+            // Les matrices d'entree, resultats publics et sorties Pending sont preserves.
+            cleanupUnused();
             break;
         case OperationName::Rotate:
         case OperationName::Mirror: {

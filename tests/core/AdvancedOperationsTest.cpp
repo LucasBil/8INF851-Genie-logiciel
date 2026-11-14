@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include <cmath>
 #include <vector>
+#include <sstream>
+#include <string>
 
 namespace {
 mss::Matrix pattern(int n) {
@@ -88,4 +90,75 @@ TEST(AdvancedOperationsTest, PendingResultsCannotBeAccessed) {
     EXPECT_THROW(system.resultAt(result), std::invalid_argument);
     system.run();
     EXPECT_NO_THROW(system.resultAt(result));
+}
+
+TEST(AdvancedOperationsTest, ExplicitCleanIsQueuedTracedAndPreservesPublicResults) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(pattern(4));
+    const int result = system.loadOperation(mss::OperationName::Rotate, {source}).at(0);
+    const auto cleaned = system.loadOperation(mss::OperationName::Clean, {});
+    EXPECT_TRUE(cleaned.empty());
+    EXPECT_EQ(system.pendingOperations(), 2U);
+    system.run();
+    EXPECT_EQ(system.pendingOperations(), 0U);
+    EXPECT_DOUBLE_EQ(system.resultAt(result).at(0, 0), 52.0);
+    EXPECT_DOUBLE_EQ(system.resultAt(source).at(0, 0), 1.0);
+    EXPECT_EQ(system.occupiedMemory(), 2U);
+    ASSERT_FALSE(system.executionTrace().empty());
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Clean);
+}
+
+TEST(AdvancedOperationsTest, CleanBeforeCalculationDoesNotDeletePendingOutputs) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(pattern(4));
+    system.loadOperation(mss::OperationName::Clean, {});
+    const int result = system.loadOperation(mss::OperationName::Mirror, {source}).at(0);
+    system.run();
+    EXPECT_DOUBLE_EQ(system.resultAt(result).at(0, 0), 4.0);
+    EXPECT_EQ(system.occupiedMemory(), 2U);
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Clean);
+}
+
+TEST(AdvancedOperationsTest, CleanRejectsInputAndOutputArguments) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(pattern(2));
+    EXPECT_THROW(system.loadOperation(mss::OperationName::Clean, {source}), std::invalid_argument);
+    const int reserved = system.getRam().reserve().front();
+    EXPECT_THROW(system.loadOperation(mss::OperationName::Clean, {}, {reserved}), std::invalid_argument);
+}
+
+TEST(AdvancedOperationsTest, LookPrintsMatrixAndLeavesItUnchanged) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(mss::Matrix({{1, 2}, {3, 4}}));
+    EXPECT_TRUE(system.loadOperation(mss::OperationName::Look, {source}).empty());
+    testing::internal::CaptureStdout();
+    system.run();
+    const std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_NE(output.find("RAM[0] : Matrice 2x2"), std::string::npos);
+    EXPECT_NE(output.find("1 2\n3 4"), std::string::npos);
+    EXPECT_DOUBLE_EQ(system.resultAt(source).at(1, 1), 4.0);
+    EXPECT_EQ(system.occupiedMemory(), 1U);
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Look);
+}
+
+TEST(AdvancedOperationsTest, LookCanInspectPendingAndOperationSlots) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(mss::Matrix({{1, 2}, {3, 4}}));
+    const int pending = system.getRam().reserve().at(0);
+    const int op = system.getRam().load(mss::Operation{mss::OperationName::Add, {static_cast<std::size_t>(source)}, {static_cast<std::size_t>(pending)}});
+    std::ostringstream out;
+    system.getRam().look(pending, out);
+    system.getRam().look(op, out);
+    EXPECT_NE(out.str().find("Pending"), std::string::npos);
+    EXPECT_NE(out.str().find("Operation"), std::string::npos);
+    EXPECT_THROW(system.getRam().look(-1, out), std::out_of_range);
+    EXPECT_THROW(system.getRam().look(999, out), std::out_of_range);
+}
+
+TEST(AdvancedOperationsTest, LookRejectsOutputAndMissingInputs) {
+    mss::MonSuperSysteme system;
+    const int address = system.loadMatrix(mss::Matrix({{1, 2}, {3, 4}}));
+    EXPECT_THROW(system.loadOperation(mss::OperationName::Look, {}), std::invalid_argument);
+    const int reserved = system.getRam().reserve().front();
+    EXPECT_THROW(system.loadOperation(mss::OperationName::Look, {address}, {reserved}), std::invalid_argument);
 }

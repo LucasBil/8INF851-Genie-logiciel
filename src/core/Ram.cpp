@@ -1,6 +1,8 @@
 #include "core/Ram.hpp"
 
 #include <cmath>
+#include <iostream>
+#include <ostream>
 #include <limits>
 #include <stdexcept>
 #include <utility>
@@ -94,6 +96,42 @@ const Operation &Ram::operationAt(std::size_t address) const {
 bool Ram::occupied(std::size_t address) const noexcept {
     return address < memory.size() && memory[address].has_value();
 }
+
+void Ram::look(int index, std::ostream &output) const {
+    const std::size_t address = checkedAddress(index);
+    if (address >= memory.size()) throw std::out_of_range("Adresse RAM inexistante.");
+    output << "RAM[" << address << "] : ";
+    if (!memory[address]) {
+        output << "Libre\n";
+        return;
+    }
+    if (const auto *matrix = std::get_if<Matrix>(&*memory[address])) {
+        output << "Matrice " << matrix->rows() << "x" << matrix->columns() << "\n";
+        for (std::size_t row = 0; row < matrix->rows(); ++row) {
+            for (std::size_t col = 0; col < matrix->columns(); ++col) {
+                if (col != 0) output << ' ';
+                output << matrix->at(row, col);
+            }
+            output << '\n';
+        }
+    } else if (const auto *operation = std::get_if<Operation>(&*memory[address])) {
+        output << "Operation (type=" << static_cast<int>(operation->type) << ", entrees=[";
+        for (std::size_t i = 0; i < operation->inputLocations.size(); ++i) {
+            if (i != 0) output << ", ";
+            output << operation->inputLocations[i];
+        }
+        output << "], sorties=[";
+        for (std::size_t i = 0; i < operation->outputLocations.size(); ++i) {
+            if (i != 0) output << ", ";
+            output << operation->outputLocations[i];
+        }
+        output << "])\n";
+    } else {
+        output << "Pending (resultat reserve, non calcule)\n";
+    }
+}
+
+void Ram::look(int index) const { look(index, std::cout); }
 
 std::size_t Ram::occupiedCount() const noexcept {
     std::size_t count = 0;

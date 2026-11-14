@@ -30,7 +30,7 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     }
 
     std::istringstream input("1 " + std::to_string(configurationIndex) +
-                             " q 3 2 2 1 2 3 4 3 2 2 5 6 7 8 4 9 1 q n 5");
+                             " q 3 2 2 1 2 3 4 3 2 2 5 6 7 8 4 10 1 q n 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;
@@ -56,7 +56,7 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     EXPECT_NE(terminal.str().find("4. Multiply (2 matrices)"), std::string::npos);
     EXPECT_NE(terminal.str().find("Rotate (1 matrice)"), std::string::npos);
     EXPECT_NE(terminal.str().find("CalcDeterminant"), std::string::npos);
-    EXPECT_NE(terminal.str().find("Operation invalide : indiquez un numero entre 1 et 7, ou q."),
+    EXPECT_NE(terminal.str().find("Operation invalide : indiquez un numero entre 1 et 9, ou q."),
               std::string::npos);
     EXPECT_NE(terminal.str().find("1 operation(s) ajoutee(s) a MSS."),
               std::string::npos);

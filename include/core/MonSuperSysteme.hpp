@@ -65,7 +65,7 @@ class MonSuperSysteme {
     // Charger une matrice dans la RAM du simulateur.
     int loadMatrix(Matrix matrix);
     // Enregistre une instruction et reserve ses adresses de sortie.
-    // Split : 4, Print : 0, les autres operations supportees : 1.
+    // Split : 4 sorties, Print, Clean et Look : 0, les autres : 1.
     std::vector<int> loadOperation(OperationName type, const std::vector<int> &inputs,
                                    const std::vector<int> &outputs = {});
     const Matrix &resultAt(int address) const;
