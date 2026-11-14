@@ -51,6 +51,8 @@ Component operationComponent(OperationName operation) {
     case OperationName::Fuse:
     case OperationName::Load:
     case OperationName::Unload:
+    case OperationName::Clean:
+    case OperationName::Look:
         return Component::Ram;
     case OperationName::Permutations:
     case OperationName::FormuleColumn:

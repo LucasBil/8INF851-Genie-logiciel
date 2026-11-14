@@ -30,7 +30,7 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     }
 
     std::istringstream input("1 " + std::to_string(configurationIndex) +
-                             " q 3 2 2 1 2 3 4 3 2 2 5 6 7 8 4 9 1 q n 5");
+                             " q 3 2 1 2 3 4 3 2 5 6 7 8 4 10 1 q n 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;
