@@ -5,6 +5,7 @@ add_executable(mss_tests
     core/CpuTest.cpp
     core/RamTest.cpp
     core/RecursiveOperationsTest.cpp
+    core/AdvancedOperationsTest.cpp
     core/OperationTest.cpp
     io/AbstractInputControllerTest.cpp
     io/UserInputControllerTest.cpp

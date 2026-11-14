@@ -5,6 +5,8 @@
 #include "core/Ram.hpp"
 
 #include <deque>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 
@@ -68,6 +70,10 @@ class MonSuperSysteme {
                                    const std::vector<int> &outputs = {});
     const Matrix &resultAt(int address) const;
     std::size_t pendingOperations() const noexcept;
+    // Nombre de cases occupees; les matrices temporaires sont liberees apres usage.
+    std::size_t occupiedMemory() const noexcept;
+    // Vide RAM, file et trace pour recommencer une simulation.
+    void clear() noexcept;
 
     /**
      * @brief retourne un version écrite de l'historique des operations effecutées
@@ -81,6 +87,13 @@ class MonSuperSysteme {
     std::deque<int> queue;
     int nextReady() const;
     void expand(const Operation &operation);
+    void expandDeterminant(const Operation &operation);
+    std::vector<int> loadInternalOperation(OperationName type, const std::vector<int> &inputs,
+                                           const std::vector<int> &outputs = {});
+    void finishOperation(const Operation &operation);
+    void cleanupUnused();
+    std::unordered_set<int> temporaryAddresses;
+    std::unordered_map<int, std::size_t> inputReferences;
     std::vector<OperationName> trace; // Taille du tableau à spécifier
 
     //Configuration configuration;
