@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <optional>
+#include <iosfwd>
 #include <variant>
 #include <vector>
 
@@ -37,6 +38,9 @@ class Ram {
     bool occupied(std::size_t address) const noexcept;
     std::size_t occupiedCount() const noexcept;
     void clear() noexcept;
+    // Affiche la case demandee : matrice, operation, reservation ou case libre.
+    void look(int index, std::ostream &output) const;
+    void look(int index) const;
     // Reordonner les colonnes sans changer la matrice source.
     Matrix reorderColumns(int address, const std::vector<int> &columns) const;
 

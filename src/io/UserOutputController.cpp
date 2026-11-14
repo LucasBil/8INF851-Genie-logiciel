@@ -32,6 +32,7 @@ const char *operationName(OperationName operation) {
     case OperationName::Print: return "Print";
     case OperationName::Mirror: return "Mirror";
     case OperationName::Clean: return "Clean";
+    case OperationName::Look: return "Look";
     }
     throw std::logic_error("Nom d'operation inconnu.");
 }

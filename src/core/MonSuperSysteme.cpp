@@ -59,6 +59,7 @@ std::vector<int> MonSuperSysteme::loadOperation(OperationName type,
         case OperationName::Fuse: inputCount = 4; break;
         case OperationName::Print: inputCount = 1; outputCount = 0; break;
         case OperationName::Clean: inputCount = 0; outputCount = 0; break;
+        case OperationName::Look: inputCount = 1; outputCount = 0; break;
         default: throw std::invalid_argument("Operation non prise en charge par ce moteur.");
     }
     if (inputs.size() != inputCount) throw std::invalid_argument("Nombre d'entrees incorrect.");
@@ -96,6 +97,8 @@ int MonSuperSysteme::nextReady() const {
     for (int address : queue) {
         const Operation &op = ram.operationAt(static_cast<std::size_t>(address));
         if (op.type == OperationName::Clean) continue;
+        // Look inspecte meme une reservation Pending : pas besoin d'un resultat pret.
+        if (op.type == OperationName::Look) return address;
         bool ready = true;
         for (std::size_t input : op.inputLocations)
             if (!ram.isReady(input)) { ready = false; break; }
@@ -244,6 +247,9 @@ void MonSuperSysteme::execute(int memoryAddress) {
         }
         case OperationName::Print:
             // L'affichage appartient au controleur de sortie.
+            break;
+        case OperationName::Look:
+            ram.look(addressAsInt(op.inputLocations.at(0)));
             break;
         case OperationName::Clean:
             // Supprime uniquement les temporaires sans references encore utiles.

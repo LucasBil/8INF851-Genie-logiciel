@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include <cmath>
 #include <vector>
+#include <sstream>
+#include <string>
 
 namespace {
 mss::Matrix pattern(int n) {
@@ -123,4 +125,40 @@ TEST(AdvancedOperationsTest, CleanRejectsInputAndOutputArguments) {
     EXPECT_THROW(system.loadOperation(mss::OperationName::Clean, {source}), std::invalid_argument);
     const int reserved = system.getRam().reserve().front();
     EXPECT_THROW(system.loadOperation(mss::OperationName::Clean, {}, {reserved}), std::invalid_argument);
+}
+
+TEST(AdvancedOperationsTest, LookPrintsMatrixAndLeavesItUnchanged) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(mss::Matrix({{1, 2}, {3, 4}}));
+    EXPECT_TRUE(system.loadOperation(mss::OperationName::Look, {source}).empty());
+    testing::internal::CaptureStdout();
+    system.run();
+    const std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_NE(output.find("RAM[0] : Matrice 2x2"), std::string::npos);
+    EXPECT_NE(output.find("1 2\n3 4"), std::string::npos);
+    EXPECT_DOUBLE_EQ(system.resultAt(source).at(1, 1), 4.0);
+    EXPECT_EQ(system.occupiedMemory(), 1U);
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Look);
+}
+
+TEST(AdvancedOperationsTest, LookCanInspectPendingAndOperationSlots) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(mss::Matrix({{1, 2}, {3, 4}}));
+    const int pending = system.getRam().reserve().at(0);
+    const int op = system.getRam().load(mss::Operation{mss::OperationName::Add, {static_cast<std::size_t>(source)}, {static_cast<std::size_t>(pending)}});
+    std::ostringstream out;
+    system.getRam().look(pending, out);
+    system.getRam().look(op, out);
+    EXPECT_NE(out.str().find("Pending"), std::string::npos);
+    EXPECT_NE(out.str().find("Operation"), std::string::npos);
+    EXPECT_THROW(system.getRam().look(-1, out), std::out_of_range);
+    EXPECT_THROW(system.getRam().look(999, out), std::out_of_range);
+}
+
+TEST(AdvancedOperationsTest, LookRejectsOutputAndMissingInputs) {
+    mss::MonSuperSysteme system;
+    const int address = system.loadMatrix(mss::Matrix({{1, 2}, {3, 4}}));
+    EXPECT_THROW(system.loadOperation(mss::OperationName::Look, {}), std::invalid_argument);
+    const int reserved = system.getRam().reserve().front();
+    EXPECT_THROW(system.loadOperation(mss::OperationName::Look, {address}, {reserved}), std::invalid_argument);
 }
