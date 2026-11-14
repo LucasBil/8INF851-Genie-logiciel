@@ -12,10 +12,11 @@ namespace mss {
 namespace {
 
 constexpr std::size_t operationCount =
-    static_cast<std::size_t>(OperationName::CalcDeterminant) + 1;
+    static_cast<std::size_t>(OperationName::Mirror) + 1;
 constexpr std::array<const char *, operationCount> operationNames = {
     "Create", "Delete", "Split", "Fuse", "Load", "Unload",
-    "Permutations", "FormuleColumn", "Rotate", "Add", "Multiply", "CalcDeterminant"};
+    "Permutations", "FormuleColumn", "Rotate", "Add", "Multiply", "CalcDeterminant",
+    "Print", "Mirror"};
 
 } // namespace
 

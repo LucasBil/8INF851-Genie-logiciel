@@ -35,6 +35,10 @@ class Ram {
 
     const Operation &operationAt(std::size_t address) const;
     bool occupied(std::size_t address) const noexcept;
+    std::size_t occupiedCount() const noexcept;
+    void clear() noexcept;
+    // Reordonner les colonnes sans changer la matrice source.
+    Matrix reorderColumns(int address, const std::vector<int> &columns) const;
 
     // Un resultat peut etre reserve avant son calcul (etat Pending).
     std::vector<int> reserve(std::size_t count = 1);

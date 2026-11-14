@@ -35,6 +35,9 @@ bool parseOperationChoice(int choice, OperationName &operation) {
     case 2: operation = OperationName::Fuse; return true;
     case 3: operation = OperationName::Add; return true;
     case 4: operation = OperationName::Multiply; return true;
+    case 5: operation = OperationName::Rotate; return true;
+    case 6: operation = OperationName::Mirror; return true;
+    case 7: operation = OperationName::CalcDeterminant; return true;
     default: return false;
     }
 }
@@ -42,6 +45,9 @@ bool parseOperationChoice(int choice, OperationName &operation) {
 std::size_t requiredInputCount(OperationName operation) {
     switch (operation) {
     case OperationName::Split:
+    case OperationName::Rotate:
+    case OperationName::Mirror:
+    case OperationName::CalcDeterminant:
         return 1;
     case OperationName::Fuse:
         return 4;
@@ -68,6 +74,7 @@ const char *operationName(OperationName operation) {
     case OperationName::Multiply: return "Multiply";
     case OperationName::CalcDeterminant: return "CalcDeterminant";
     case OperationName::Print: return "Print";
+    case OperationName::Mirror: return "Mirror";
     }
     throw std::logic_error("Nom d'operation inconnu.");
 }
@@ -156,6 +163,15 @@ void UserInputController::saveConfiguration() {
         configuration.set(operation, cost);
     }
 
+    // Mirror est une extension ajoutee apres les operations historiques.
+    int mirrorCost = 0;
+    while (true) {
+        if (!readInteger("Cout de Mirror (strictement positif) : ", mirrorCost)) return;
+        if (mirrorCost > 0) break;
+        terminal << "Le cout doit etre strictement superieur a zero.\n";
+    }
+    configuration.set(OperationName::Mirror, mirrorCost);
+
     terminal << "Nom de la configuration : ";
     std::string name;
     if (!(input >> name)) {
@@ -242,7 +258,10 @@ void UserInputController::execute() {
              << "1. Split (1 matrice)\n"
              << "2. Fuse (4 matrices)\n"
              << "3. Add (2 matrices)\n"
-             << "4. Multiply (2 matrices)\n";
+             << "4. Multiply (2 matrices)\n"
+             << "5. Rotate (1 matrice)\n"
+             << "6. Mirror (1 matrice)\n"
+             << "7. CalcDeterminant (1 matrice)\n";
 
     while (true) {
         terminal << "Operation a ajouter (q pour terminer) : ";
@@ -257,7 +276,7 @@ void UserInputController::execute() {
         int choice = 0;
         OperationName operation = OperationName::Split;
         if (!parseInteger(selection, choice) || !parseOperationChoice(choice, operation)) {
-            terminal << "Operation invalide : indiquez un numero entre 1 et 4, ou q.\n";
+            terminal << "Operation invalide : indiquez un numero entre 1 et 7, ou q.\n";
             continue;
         }
 
