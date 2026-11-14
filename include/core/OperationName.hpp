@@ -29,7 +29,8 @@ enum class OperationName {
     /// Multiplication de matrices.
     Multiply,
     CalcDeterminant,
-    Print // Extension: affichage d'un resultat pret.
+    Print, // Extension: affichage d'un resultat pret.
+    Mirror // Miroir horizontal (gauche-droite).
 };
 
 } // namespace mss

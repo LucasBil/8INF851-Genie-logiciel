@@ -36,6 +36,7 @@ const char *operationName(OperationName operation) {
     case OperationName::Multiply: return "Multiply";
     case OperationName::CalcDeterminant: return "CalcDeterminant";
     case OperationName::Print: return "Print";
+    case OperationName::Mirror: return "Mirror";
     }
     throw std::logic_error("Nom d'operation inconnu.");
 }

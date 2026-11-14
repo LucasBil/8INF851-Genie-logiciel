@@ -95,6 +95,32 @@ bool Ram::occupied(std::size_t address) const noexcept {
     return address < memory.size() && memory[address].has_value();
 }
 
+std::size_t Ram::occupiedCount() const noexcept {
+    std::size_t count = 0;
+    for (const auto &slot : memory) if (slot.has_value()) ++count;
+    return count;
+}
+
+void Ram::clear() noexcept { memory.clear(); }
+
+Matrix Ram::reorderColumns(int address, const std::vector<int> &columns) const {
+    const Matrix &source = at(checkedAddress(address));
+    const std::size_t n = source.rows();
+    if (source.columns() != n || columns.size() != n)
+        throw std::invalid_argument("Permutation de colonnes invalide.");
+    std::vector<bool> visited(n, false);
+    for (int column : columns) {
+        if (column < 0 || static_cast<std::size_t>(column) >= n || visited[static_cast<std::size_t>(column)])
+            throw std::invalid_argument("Les colonnes doivent former une permutation.");
+        visited[static_cast<std::size_t>(column)] = true;
+    }
+    std::vector<std::vector<double>> data(n, std::vector<double>(n));
+    for (std::size_t r = 0; r < n; ++r)
+        for (std::size_t c = 0; c < n; ++c)
+            data[r][c] = source.at(r, static_cast<std::size_t>(columns[c]));
+    return Matrix(std::move(data));
+}
+
 std::size_t Ram::size() const noexcept {
     // Taille de l'espace d'adressage (les trous liberes sont conserves).
     return memory.size();
@@ -195,11 +221,12 @@ int Ram::fuse(const std::vector<int> &addresses) {
 }
 
 std::vector<int> Ram::reserve(std::size_t count) {
-    if (count > static_cast<std::size_t>(std::numeric_limits<int>::max()) - memory.size()) {
+    if (count == 0) return {};
+    const std::size_t first = findContiguous(count);
+    if (first > static_cast<std::size_t>(std::numeric_limits<int>::max()) ||
+        count - 1 > static_cast<std::size_t>(std::numeric_limits<int>::max()) - first)
         throw std::overflow_error("Espace d'adressage RAM depasse.");
-    }
-    const std::size_t first = memory.size();
-    memory.resize(first + count);
+    if (first + count > memory.size()) memory.resize(first + count);
     std::vector<int> addresses;
     addresses.reserve(count);
     for (std::size_t i = 0; i < count; ++i) {
@@ -218,7 +245,7 @@ void Ram::storeResult(int address, Matrix result) {
     const auto pos = checkedAddress(address);
     if (pos >= memory.size() || !memory[pos] ||
         !std::holds_alternative<Pending>(*memory[pos])) {
-        throw std::logic_error("Le resultat doit etre ecrit dans une adresse reservee.");
+        throw std::logic_error("Le resultat doit etre ecrit dans une adresse reservee : " + std::to_string(address));
     }
     memory[pos] = Cell(std::move(result));
 }
