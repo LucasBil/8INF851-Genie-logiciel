@@ -56,6 +56,7 @@ Component operationComponent(OperationName operation) {
     case OperationName::Add:
     case OperationName::Multiply:
     case OperationName::CalcDeterminant:
+    case OperationName::Mirror:
         return Component::Cpu;
     case OperationName::Print:
         return Component::Io;

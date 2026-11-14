@@ -30,7 +30,7 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     }
 
     std::istringstream input("1 " + std::to_string(configurationIndex) +
-                             " q 3 2 2 1 2 3 4 3 2 2 5 6 7 8 4 9 1 q n 5");
+                             " q 3 2 1 2 3 4 3 2 5 6 7 8 4 9 1 q n 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;
@@ -70,7 +70,7 @@ TEST(UserInputControllerTest, RejectsInvalidMatrixDimensionsAndValues) {
     mss::SerializerTool serializer;
     mss::Configuration configuration;
     configuration.set(mss::OperationName::Rotate, 4);
-    std::istringstream input("3 2 3 2 2 1 2 invalid 3 4 5");
+    std::istringstream input("3 3 2 1 2 invalid 3 4 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;
@@ -79,7 +79,8 @@ TEST(UserInputControllerTest, RejectsInvalidMatrixDimensionsAndValues) {
     controller.run();
 
     EXPECT_DOUBLE_EQ(system.initialMatrix().at(1, 1), 4.0);
-    EXPECT_NE(terminal.str().find("Les matrices doivent etre carrees."), std::string::npos);
+    EXPECT_NE(terminal.str().find("La dimension de la matrice doit etre une puissance de 2."),
+              std::string::npos);
     EXPECT_NE(terminal.str().find("Entree invalide : un entier est requis."), std::string::npos);
 }
 
