@@ -56,7 +56,7 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     EXPECT_NE(terminal.str().find("4. Multiply (2 matrices)"), std::string::npos);
     EXPECT_NE(terminal.str().find("Rotate (1 matrice)"), std::string::npos);
     EXPECT_NE(terminal.str().find("CalcDeterminant"), std::string::npos);
-    EXPECT_NE(terminal.str().find("Operation invalide : indiquez un numero entre 1 et 7, ou q."),
+    EXPECT_NE(terminal.str().find("Operation invalide : indiquez un numero entre 1 et 8, ou q."),
               std::string::npos);
     EXPECT_NE(terminal.str().find("1 operation(s) ajoutee(s) a MSS."),
               std::string::npos);

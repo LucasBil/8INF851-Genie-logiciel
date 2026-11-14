@@ -38,12 +38,14 @@ bool parseOperationChoice(int choice, OperationName &operation) {
     case 5: operation = OperationName::Rotate; return true;
     case 6: operation = OperationName::Mirror; return true;
     case 7: operation = OperationName::CalcDeterminant; return true;
+    case 8: operation = OperationName::Clean; return true;
     default: return false;
     }
 }
 
 std::size_t requiredInputCount(OperationName operation) {
     switch (operation) {
+    case OperationName::Clean: return 0;
     case OperationName::Split:
     case OperationName::Rotate:
     case OperationName::Mirror:
@@ -75,6 +77,7 @@ const char *operationName(OperationName operation) {
     case OperationName::CalcDeterminant: return "CalcDeterminant";
     case OperationName::Print: return "Print";
     case OperationName::Mirror: return "Mirror";
+    case OperationName::Clean: return "Clean";
     }
     throw std::logic_error("Nom d'operation inconnu.");
 }
@@ -172,6 +175,14 @@ void UserInputController::saveConfiguration() {
     }
     configuration.set(OperationName::Mirror, mirrorCost);
 
+    int cleanCost = 0;
+    while (true) {
+        if (!readInteger("Cout de Clean (strictement positif) : ", cleanCost)) return;
+        if (cleanCost > 0) break;
+        terminal << "Le cout doit etre strictement superieur a zero.\n";
+    }
+    configuration.set(OperationName::Clean, cleanCost);
+
     terminal << "Nom de la configuration : ";
     std::string name;
     if (!(input >> name)) {
@@ -249,8 +260,7 @@ void UserInputController::execute() {
         }
     }
     if (matrixAddresses.empty()) {
-        terminal << "Entrez ou generez une matrice avant de planifier une operation.\n";
-        return;
+        terminal << "Aucune matrice disponible : seule l'operation Clean est possible.\n";
     }
 
     std::vector<std::pair<OperationName, std::vector<int>>> operations;
@@ -261,7 +271,8 @@ void UserInputController::execute() {
              << "4. Multiply (2 matrices)\n"
              << "5. Rotate (1 matrice)\n"
              << "6. Mirror (1 matrice)\n"
-             << "7. CalcDeterminant (1 matrice)\n";
+             << "7. CalcDeterminant (1 matrice)\n"
+             << "8. Clean (aucune matrice)\n";
 
     while (true) {
         terminal << "Operation a ajouter (q pour terminer) : ";
@@ -276,7 +287,7 @@ void UserInputController::execute() {
         int choice = 0;
         OperationName operation = OperationName::Split;
         if (!parseInteger(selection, choice) || !parseOperationChoice(choice, operation)) {
-            terminal << "Operation invalide : indiquez un numero entre 1 et 7, ou q.\n";
+            terminal << "Operation invalide : indiquez un numero entre 1 et 8, ou q.\n";
             continue;
         }
 
