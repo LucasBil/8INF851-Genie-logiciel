@@ -11,3 +11,5 @@ Add 1
 Multiply 1
 CalcDeterminant 1
 Mirror 1
+Clean 1
+Look 1

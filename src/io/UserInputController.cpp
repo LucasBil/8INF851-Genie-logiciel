@@ -39,12 +39,16 @@ bool parseOperationChoice(int choice, OperationName &operation) {
     case 5: operation = OperationName::Rotate; return true;
     case 6: operation = OperationName::Mirror; return true;
     case 7: operation = OperationName::CalcDeterminant; return true;
+    case 8: operation = OperationName::Clean; return true;
+    case 9: operation = OperationName::Look; return true;
     default: return false;
     }
 }
 
 std::size_t requiredInputCount(OperationName operation) {
     switch (operation) {
+    case OperationName::Clean: return 0;
+    case OperationName::Look: return 1;
     case OperationName::Split:
     case OperationName::Rotate:
     case OperationName::Mirror:
@@ -76,6 +80,8 @@ const char *operationName(OperationName operation) {
     case OperationName::CalcDeterminant: return "CalcDeterminant";
     case OperationName::Print: return "Print";
     case OperationName::Mirror: return "Mirror";
+    case OperationName::Clean: return "Clean";
+    case OperationName::Look: return "Look";
     }
     throw std::logic_error("Nom d'operation inconnu.");
 }
@@ -173,6 +179,22 @@ void UserInputController::saveConfiguration() {
     }
     configuration.set(OperationName::Mirror, mirrorCost);
 
+    int cleanCost = 0;
+    while (true) {
+        if (!readInteger("Cout de Clean (strictement positif) : ", cleanCost)) return;
+        if (cleanCost > 0) break;
+        terminal << "Le cout doit etre strictement superieur a zero.\n";
+    }
+    configuration.set(OperationName::Clean, cleanCost);
+
+    int lookCost = 0;
+    while (true) {
+        if (!readInteger("Cout de Look (strictement positif) : ", lookCost)) return;
+        if (lookCost > 0) break;
+        terminal << "Le cout doit etre strictement superieur a zero.\n";
+    }
+    configuration.set(OperationName::Look, lookCost);
+
     terminal << "Nom de la configuration : ";
     std::string name;
     if (!(input >> name)) {
@@ -247,8 +269,7 @@ void UserInputController::execute() {
         }
     }
     if (matrixAddresses.empty()) {
-        terminal << "Entrez ou generez une matrice avant de planifier une operation.\n";
-        return;
+        terminal << "Aucune matrice disponible : Clean et Look restent possibles selon les adresses RAM.\n";
     }
 
     std::vector<std::pair<OperationName, std::vector<int>>> operations;
@@ -259,7 +280,9 @@ void UserInputController::execute() {
              << "4. Multiply (2 matrices)\n"
              << "5. Rotate (1 matrice)\n"
              << "6. Mirror (1 matrice)\n"
-             << "7. CalcDeterminant (1 matrice)\n";
+             << "7. CalcDeterminant (1 matrice)\n"
+             << "8. Clean (aucune matrice)\n"
+             << "9. Look (adresse RAM a afficher)\n";
 
     while (true) {
         terminal << "Operation a ajouter (q pour terminer) : ";
@@ -274,23 +297,39 @@ void UserInputController::execute() {
         int choice = 0;
         OperationName operation = OperationName::Split;
         if (!parseInteger(selection, choice) || !parseOperationChoice(choice, operation)) {
-            terminal << "Operation invalide : indiquez un numero entre 1 et 7, ou q.\n";
+            terminal << "Operation invalide : indiquez un numero entre 1 et 9, ou q.\n";
             continue;
         }
 
         std::vector<int> inputLocations;
         const std::size_t inputCount = requiredInputCount(operation);
-        if (matrixAddresses.size() < inputCount) {
+        if (operation != OperationName::Look && matrixAddresses.size() < inputCount) {
             terminal << "Cette operation necessite " << inputCount
                      << " matrice(s), mais seulement " << matrixAddresses.size()
                      << " est/sont disponible(s).\n";
             return;
         }
         inputLocations.reserve(inputCount);
-        const auto firstInput = matrixAddresses.end() -
-                                static_cast<std::ptrdiff_t>(inputCount);
-        for (auto address = firstInput; address != matrixAddresses.end(); ++address) {
-            inputLocations.push_back(static_cast<int>(*address));
+        if (operation == OperationName::Look) {
+            int address = 0;
+            if (!readInteger("Adresse RAM a regarder : ", address)) return;
+            if (address < 0 || static_cast<std::size_t>(address) >= ram.size()) {
+                terminal << "Adresse RAM inexistante.\n";
+                continue;
+            }
+            // Une case vide peut etre regardee directement avec Ram::look(),
+            // mais une instruction Look dans la file demande une case existante et occupee.
+            if (!ram.occupied(static_cast<std::size_t>(address))) {
+                terminal << "Cette case RAM est libre.\n";
+                continue;
+            }
+            inputLocations.push_back(address);
+        } else {
+            const auto firstInput = matrixAddresses.end() -
+                                    static_cast<std::ptrdiff_t>(inputCount);
+            for (auto address = firstInput; address != matrixAddresses.end(); ++address) {
+                inputLocations.push_back(static_cast<int>(*address));
+            }
         }
         operations.emplace_back(operation, std::move(inputLocations));
     }

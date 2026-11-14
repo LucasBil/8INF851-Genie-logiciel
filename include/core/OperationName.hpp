@@ -30,7 +30,9 @@ enum class OperationName {
     Multiply,
     CalcDeterminant,
     Print, // Extension: affichage d'un resultat pret.
-    Mirror // Miroir horizontal (gauche-droite).
+    Mirror, // Miroir horizontal (gauche-droite).
+    Clean,  // Nettoyage explicite des matrices temporaires inutilisees.
+    Look    // Affiche le contenu d'une case RAM sans la modifier.
 };
 
 } // namespace mss
