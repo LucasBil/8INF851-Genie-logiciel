@@ -30,7 +30,7 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     }
 
     std::istringstream input("1 " + std::to_string(configurationIndex) +
-                             " q 3 2 2 1 2 3 4 3 2 2 5 6 7 8 4 10 1 q n 5");
+                             " q 3 2 1 2 3 4 3 2 5 6 7 8 4 10 1 q n 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;
@@ -62,13 +62,15 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
               std::string::npos);
     EXPECT_NE(terminal.str().find("Trace d'execution :"),
               std::string::npos);
+    EXPECT_NE(terminal.str().find("--------------------"),
+              std::string::npos);
 }
 
 TEST(UserInputControllerTest, RejectsInvalidMatrixDimensionsAndValues) {
     mss::SerializerTool serializer;
     mss::Configuration configuration;
     configuration.set(mss::OperationName::Rotate, 4);
-    std::istringstream input("3 2 3 2 2 1 2 invalid 3 4 5");
+    std::istringstream input("3 3 2 1 2 invalid 3 4 5");
     std::ostringstream terminal;
     mss::UserOutputController output({}, input, terminal);
     mss::MonSuperSysteme system;
@@ -77,7 +79,8 @@ TEST(UserInputControllerTest, RejectsInvalidMatrixDimensionsAndValues) {
     controller.run();
 
     EXPECT_DOUBLE_EQ(system.initialMatrix().at(1, 1), 4.0);
-    EXPECT_NE(terminal.str().find("Les matrices doivent etre carrees."), std::string::npos);
+    EXPECT_NE(terminal.str().find("La dimension de la matrice doit etre une puissance de 2."),
+              std::string::npos);
     EXPECT_NE(terminal.str().find("Entree invalide : un entier est requis."), std::string::npos);
 }
 
@@ -168,5 +171,28 @@ TEST(UserInputControllerTest, DoesNotStartWithoutAnActiveConfiguration) {
 
     EXPECT_THROW(system.initialMatrix(), std::logic_error);
     EXPECT_NE(terminal.str().find("Chargez ou creez une configuration avant l'execution."),
+              std::string::npos);
+}
+
+TEST(UserInputControllerTest, SeparatesMenuChoicesWithWhitespace) {
+    mss::SerializerTool serializer;
+    std::istringstream input("5");
+    std::ostringstream terminal;
+    mss::UserOutputController output({}, input, terminal);
+    mss::MonSuperSysteme system;
+    mss::UserInputController controller(serializer, output, system, input, terminal);
+
+    controller.run();
+
+    EXPECT_NE(terminal.str().find(
+                  "Menu principal\n"
+                  "--------------------\n"
+                  "0. Demonstration automatique\n\n"
+                  "1. Charger une configuration\n\n"
+                  "2. Creer et sauvegarder une configuration\n\n"
+                  "3. Entrer une matrice\n\n"
+                  "4. Executer une operation\n\n"
+                  "5. Quitter\n\n"
+                  "Votre choix : "),
               std::string::npos);
 }

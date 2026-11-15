@@ -4,8 +4,8 @@ Le module contient les contrôleurs d'entrée utilisateur et de démonstration, 
 
 Le contrôleur de sortie affiche la trace d'exécution, le coût de chaque opération et le total de chaque configuration. Il indique la configuration la moins coûteuse et permet d'enregistrer ce même rapport texte via `TraceSerializer`.
 
-`UserInputController` propose un menu pour lister et charger une configuration, en créer et sauvegarder une, entrer une matrice, lancer le système ou quitter. Une configuration doit définir les 12 coûts positifs du modèle. Les erreurs de saisie et de fichiers sont affichées sans quitter le menu. L'instance actuelle de MSS ne peut charger qu'une matrice initiale et le noyau ne fournit pas encore d'API pour programmer une opération; le contrôleur refuse donc de présenter une trace vide comme un bilan réussi.
+`UserInputController` propose un menu pour lancer une démonstration automatique, charger ou créer une configuration, entrer une matrice, lancer le système ou quitter. Une configuration doit définir les coûts des opérations qu'elle évalue. Les erreurs de saisie et de fichiers sont affichées sans quitter le menu.
 
-`DemoInputController` charge une matrice 2x2 et affiche les résultats sans demander de saisie ni de choix de sauvegarde. Il signale une erreur si le noyau ne produit aucune opération.
+`DemoInputController` exécute deux scénarios sans interaction utilisateur : opérations de base (addition, multiplication, split et fuse) sur des matrices 2x2, puis addition et multiplication récursives de deux matrices 4x4. Chaque scénario affiche et enregistre sa trace dans `trace/` sous un nom commençant par `demo_input_`, avec la dimension dans le nom.
 
-Les sous-totaux CPU/RAM et le lancement d'opérations restent à définir dans le noyau : le modèle de coût ne précise pas de répartition par composant et `MonSuperSysteme` n'expose pas encore de mécanisme de programmation d'opérations.
+Le contrôleur de sortie attribue les opérations aux composants et affiche leurs sous-totaux en plus du coût total par configuration.

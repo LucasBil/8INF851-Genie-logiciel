@@ -2,6 +2,7 @@
 
 #include "core/Matrix.hpp"
 #include "core/MonSuperSysteme.hpp"
+#include "io/DemoInputController.hpp"
 #include "io/UserOutputController.hpp"
 #include "serializer/SerializerTool.hpp"
 
@@ -207,25 +208,22 @@ void UserInputController::saveConfiguration() {
 }
 
 void UserInputController::createMatrix() {
-    int rowCount = 0;
-    int columnCount = 0;
+    int dim = 0;
+
     while (true) {
-        if (!readInteger("Nombre de lignes : ", rowCount) ||
-            !readInteger("Nombre de colonnes : ", columnCount)) {
+        if (!readInteger("Dimension de la matrice (carre): ", dim)) {
             return;
         }
-        if (rowCount < 2 || columnCount < 2) {
+        if (dim < 2) {
             terminal << "La dimension minimale de la matrice est 2.\n";
-        } else if (rowCount != columnCount) {
-            terminal << "Les matrices doivent etre carrees.\n";
-        } else if (!isPowerOfTwo(static_cast<unsigned int>(rowCount))) {
+        } else if (!isPowerOfTwo(static_cast<unsigned int>(dim))) {
             terminal << "La dimension de la matrice doit etre une puissance de 2.\n";
         } else {
             break;
         }
     }
 
-    const auto dimension = static_cast<std::size_t>(rowCount);
+    const auto dimension = static_cast<std::size_t>(dim);
     std::vector<std::vector<double>> values(dimension, std::vector<double>(dimension));
     terminal << "Entrez les valeurs entieres de la matrice, ligne par ligne :\n";
     for (auto &row : values) {
@@ -351,11 +349,18 @@ void UserInputController::execute() {
 void UserInputController::run() {
     while (true) {
         terminal << "\nMenu principal\n"
+                 << "--------------------\n"
+                 << "0. Demonstration automatique\n"
+                 << '\n'
                  << "1. Charger une configuration\n"
+                 << '\n'
                  << "2. Creer et sauvegarder une configuration\n"
+                 << '\n'
                  << "3. Entrer une matrice\n"
+                 << '\n'
                  << "4. Executer une operation\n"
-                 << "5. Quitter\n";
+                 << '\n'
+                 << "5. Quitter\n\n";
         int choice = 0;
         if (!readInteger("Votre choix : ", choice)) {
             return;
@@ -363,6 +368,12 @@ void UserInputController::run() {
 
         try {
             switch (choice) {
+            case 0: {
+                MonSuperSysteme demoSystem;
+                DemoInputController demo(*serializer, *output, demoSystem);
+                demo.run();
+                break;
+            }
             case 1:
                 loadConfiguration();
                 break;
@@ -384,6 +395,7 @@ void UserInputController::run() {
         } catch (const std::exception &error) {
             terminal << "Erreur : " << error.what() << '\n';
         }
+        terminal << "\n--------------------\n\n";
     }
 }
 

@@ -14,6 +14,12 @@
 namespace mss {
 namespace {
 
+enum class Component {
+    Ram,
+    Cpu,
+    Io
+};
+
 const char *operationName(OperationName operation) {
     //Permet de transformer les OperationName enum en chaîne de caractère
     switch (operation) {
@@ -37,6 +43,48 @@ const char *operationName(OperationName operation) {
     throw std::logic_error("Nom d'operation inconnu.");
 }
 
+Component operationComponent(OperationName operation) {
+    switch (operation) {
+    case OperationName::Create:
+    case OperationName::Delete:
+    case OperationName::Split:
+    case OperationName::Fuse:
+    case OperationName::Load:
+    case OperationName::Unload:
+    case OperationName::Clean:
+    case OperationName::Look:
+        return Component::Ram;
+    case OperationName::Permutations:
+    case OperationName::FormuleColumn:
+    case OperationName::Rotate:
+    case OperationName::Add:
+    case OperationName::Multiply:
+    case OperationName::CalcDeterminant:
+    case OperationName::Mirror:
+        return Component::Cpu;
+    case OperationName::Print:
+        return Component::Io;
+    }
+    throw std::logic_error("Composant d'operation inconnu.");
+}
+
+const char *componentName(Component component) {
+    switch (component) {
+    case Component::Ram: return "RAM";
+    case Component::Cpu: return "CPU";
+    case Component::Io: return "E/S";
+    }
+    throw std::logic_error("Nom de composant inconnu.");
+}
+
+void addToComponentTotal(std::vector<long long> &totals, Component component, int cost) {
+    switch (component) {
+    case Component::Ram: totals[0] += cost; break;
+    case Component::Cpu: totals[1] += cost; break;
+    case Component::Io: totals[2] += cost; break;
+    }
+}
+
 std::string buildReport(const std::vector<Configuration> &configurations,
                         const std::vector<OperationName> &trace) {
     if (configurations.empty()) {
@@ -48,26 +96,35 @@ std::string buildReport(const std::vector<Configuration> &configurations,
     std::ostringstream report;
     report << "Trace d'execution :\n";
     for (std::size_t index = 0; index < trace.size(); ++index) {
-        report << index + 1 << ". " << operationName(trace[index]) << '\n';
+        report << index + 1 << ". " << operationName(trace[index]) << " ("
+               << componentName(operationComponent(trace[index])) << ")\n";
     }
 
     for (std::size_t configurationIndex = 0; configurationIndex < configurations.size();
          ++configurationIndex) {
         const Configuration &configuration = configurations[configurationIndex];
         long long total = 0;
+        std::vector<long long> componentTotals(3, 0);
         std::vector<int> operationCosts;
         operationCosts.reserve(trace.size());
         for (const OperationName operation : trace) {
             const int cost = configuration.get(operation);
             operationCosts.push_back(cost);
             total += cost;
+            addToComponentTotal(componentTotals, operationComponent(operation), cost);
         }
         totals.push_back(total);
         report << "Configuration " << configurationIndex + 1 << " : " << total << '\n';
+        report << "  Sous-total RAM : " << componentTotals[0] << '\n'
+               << "  Sous-total CPU : " << componentTotals[1] << '\n';
+        if (componentTotals[2] != 0) {
+            report << "  Sous-total E/S : " << componentTotals[2] << '\n';
+        }
         for (std::size_t operationIndex = 0; operationIndex < trace.size(); ++operationIndex) {
             report << "  " << operationIndex + 1 << ". "
                    << operationName(trace[operationIndex]) << " : "
-                   << operationCosts[operationIndex] << '\n';
+                   << operationCosts[operationIndex] << " ("
+                   << componentName(operationComponent(trace[operationIndex])) << ")\n";
         }
     }
 
@@ -139,7 +196,12 @@ void UserOutputController::outputTrace(const std::vector<OperationName> &trace) 
         throw std::runtime_error("Lecture du nom de fichier impossible.");
     }
 
-    std::ofstream file(fileName);
+    outputTrace(trace, std::filesystem::path(fileName));
+}
+
+void UserOutputController::outputTrace(const std::vector<OperationName> &trace,
+                                       const std::filesystem::path &filePath) {
+    std::ofstream file(filePath);
     if (!file) {
         throw std::runtime_error("Impossible d'ouvrir le fichier de sauvegarde.");
     }
@@ -152,6 +214,7 @@ void UserOutputController::outputTrace(const std::vector<OperationName> &trace) 
         throw std::runtime_error("Ecriture de la trace impossible.");
     }
     output << "Trace sauvegardee.\n";
+    output << "Fichier : " << filePath.string() << '\n';
 }
 
 } // namespace mss
