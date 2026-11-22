@@ -252,10 +252,18 @@ void MonSuperSysteme::execute(int memoryAddress) {
             ram.look(addressAsInt(op.inputLocations.at(0)));
             break;
         case OperationName::Clean:
-            // Supprime uniquement les temporaires sans references encore utiles.
-            // Les matrices d'entree, resultats publics et sorties Pending sont preserves.
-            cleanupUnused();
-            break;
+            // Clean est une barriere : nextReady() execute d'abord toutes les autres
+            // operations, y compris les sous-operations generees recursivement.
+            // Supprimer l'instruction actuelle et la tracer avant de vider la RAM.
+            // Si plusieurs Clean ont ete demandes, les executer tous avant le reset.
+            trace.push_back(OperationName::Clean);
+            ram.remove(memoryAddress);
+            if (queue.empty()) {
+                ram.clear();
+                temporaryAddresses.clear();
+                inputReferences.clear();
+            }
+            return;
         case OperationName::Rotate:
         case OperationName::Mirror: {
             Matrix first = ram.at(op.inputLocations.at(0));
