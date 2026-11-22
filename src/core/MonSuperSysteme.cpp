@@ -42,7 +42,8 @@ const Matrix &MonSuperSysteme::resultAt(int address) const {
 std::size_t MonSuperSysteme::pendingOperations() const noexcept { return queue.size(); }
 std::size_t MonSuperSysteme::occupiedMemory() const noexcept { return ram.occupiedCount(); }
 void MonSuperSysteme::clear() noexcept {
-    queue.clear(); trace.clear(); temporaryAddresses.clear(); inputReferences.clear(); ram.clear();
+    queue.clear(); trace.clear(); temporaryAddresses.clear(); inputReferences.clear();
+    finalResultAddresses.clear(); ram.clear();
 }
 
 std::vector<int> MonSuperSysteme::loadOperation(OperationName type,
@@ -80,41 +81,48 @@ std::vector<int> MonSuperSysteme::loadOperation(OperationName type,
     const int opAddress = ram.load(Operation{type, std::move(ins), std::move(outs)});
     queue.push_back(opAddress);
     for (int input : inputs) ++inputReferences[input];
+    // Un appel explicite remplace le resultat final precedent. Les appels
+    // internes de decomposition sauvegardent/restaurent cette selection.
+    if (outputCount != 0) finalResultAddresses = resultAddresses;
     return resultAddresses;
 }
 
 std::vector<int> MonSuperSysteme::loadInternalOperation(OperationName type,
         const std::vector<int> &inputs, const std::vector<int> &outputs) {
+    const auto previousFinal = finalResultAddresses;
     const auto out = loadOperation(type, inputs, outputs);
+    finalResultAddresses = previousFinal;
     if (outputs.empty()) for (int address : out) temporaryAddresses.insert(address);
     return out;
 }
 
 int MonSuperSysteme::nextReady() const {
-    // Clean est une barriere de nettoyage : les operations de calcul (y compris
-    // celles ajoutees par decomposition recursive) sont terminees en premier.
-    // On conserve une instruction Clean en attente tant qu'il reste du travail.
+    // Phase 1 : executer tous les calculs, y compris les sous-operations
+    // generees dynamiquement par la decomposition recursive.
+    bool hasCalculation = false;
     for (int address : queue) {
         const Operation &op = ram.operationAt(static_cast<std::size_t>(address));
-        if (op.type == OperationName::Clean) continue;
-        // Look inspecte meme une reservation Pending : pas besoin d'un resultat pret.
-        if (op.type == OperationName::Look) return address;
-        bool ready = true;
-        for (std::size_t input : op.inputLocations)
-            if (!ram.isReady(input)) { ready = false; break; }
+        if (op.type == OperationName::Clean || op.type == OperationName::Look) continue;
+        hasCalculation = true;
+        const bool ready = std::all_of(op.inputLocations.begin(), op.inputLocations.end(),
+            [&](std::size_t input) { return ram.isReady(input); });
         if (ready) return address;
     }
-    for (int address : queue) {
-        if (ram.operationAt(static_cast<std::size_t>(address)).type == OperationName::Clean) {
-            // Une operation encore en attente de ses donnees serait un interblocage.
-            const bool hasWork = std::any_of(queue.begin(), queue.end(), [&](int candidate) {
-                return ram.operationAt(static_cast<std::size_t>(candidate)).type != OperationName::Clean;
-            });
-            if (!hasWork) return address;
-            break;
-        }
-    }
-    throw std::runtime_error("Interblocage : aucune operation n'a ses entrees disponibles.");
+    if (hasCalculation)
+        throw std::runtime_error("Interblocage : aucune operation de calcul n'a ses entrees disponibles.");
+
+    // Phase 2 : n'inspecter les adresses qu'apres la production de tous les resultats.
+    // Une case Pending sans producteur reste inspectable, comme avec Ram::look().
+    for (int address : queue)
+        if (ram.operationAt(static_cast<std::size_t>(address)).type == OperationName::Look)
+            return address;
+
+    // Phase 3 : nettoyer en dernier, pour ne pas supprimer les resultats avant Look.
+    for (int address : queue)
+        if (ram.operationAt(static_cast<std::size_t>(address)).type == OperationName::Clean)
+            return address;
+
+    throw std::runtime_error("Aucune operation disponible dans la file.");
 }
 
 void MonSuperSysteme::expand(const Operation &op) {
@@ -310,6 +318,21 @@ void MonSuperSysteme::execute(int memoryAddress) {
 }
 
 void MonSuperSysteme::run() {
+    // Look n'est pas modifie : on ajoute simplement une instruction Look
+    // pour chaque sortie de la derniere operation de calcul explicite.
+    // nextReady() execute les calculs avant les Look et les Clean en dernier.
+    const auto resultsToDisplay = std::move(finalResultAddresses);
+    finalResultAddresses.clear();
+    for (int result : resultsToDisplay) {
+        // Ne pas doubler un Look deja programme sur cette meme adresse.
+        const bool alreadyQueued = std::any_of(queue.begin(), queue.end(), [&](int address) {
+            const auto &op = ram.operationAt(static_cast<std::size_t>(address));
+            return op.type == OperationName::Look &&
+                   op.inputLocations.size() == 1 &&
+                   op.inputLocations[0] == static_cast<std::size_t>(result);
+        });
+        if (!alreadyQueued) loadOperation(OperationName::Look, {result});
+    }
     while (!queue.empty()) {
         const int address = nextReady();
         const auto it = std::find(queue.begin(), queue.end(), address);

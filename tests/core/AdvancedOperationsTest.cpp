@@ -192,3 +192,116 @@ TEST(AdvancedOperationsTest, LookRejectsOutputAndMissingInputs) {
     const int reserved = system.getRam().reserve().front();
     EXPECT_THROW(system.loadOperation(mss::OperationName::Look, {address}, {reserved}), std::invalid_argument);
 }
+
+TEST(AdvancedOperationsTest, LookWaitsForFinalRecursiveResult) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(pattern(4));
+    const int result = system.loadOperation(mss::OperationName::Rotate, {source}).at(0);
+    system.loadOperation(mss::OperationName::Look, {result});
+    testing::internal::CaptureStdout();
+    system.run();
+    const std::string printed = testing::internal::GetCapturedStdout();
+    EXPECT_NE(printed.find("RAM[" + std::to_string(result) + "] : Matrice 4x4"), std::string::npos);
+    EXPECT_EQ(printed.find("Pending"), std::string::npos);
+    ASSERT_FALSE(system.executionTrace().empty());
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Look);
+    EXPECT_DOUBLE_EQ(system.resultAt(result).at(0, 0), pattern(4).at(3, 0));
+}
+
+TEST(AdvancedOperationsTest, LookRunsAfterCalculationsEvenWhenQueuedFirst) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(pattern(4));
+    const int result = system.getRam().reserve().front();
+    system.loadOperation(mss::OperationName::Look, {result});
+    system.loadOperation(mss::OperationName::Mirror, {source}, {result});
+    testing::internal::CaptureStdout();
+    system.run();
+    const std::string printed = testing::internal::GetCapturedStdout();
+    EXPECT_NE(printed.find("Matrice 4x4"), std::string::npos);
+    EXPECT_EQ(printed.find("Pending"), std::string::npos);
+    ASSERT_FALSE(system.executionTrace().empty());
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Look);
+}
+
+TEST(AdvancedOperationsTest, LookRunsBeforeCleanEvenWhenCleanQueuedFirst) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(pattern(4));
+    const int result = system.loadOperation(mss::OperationName::Rotate, {source}).at(0);
+    system.loadOperation(mss::OperationName::Clean, {});
+    system.loadOperation(mss::OperationName::Look, {result});
+    testing::internal::CaptureStdout();
+    system.run();
+    const std::string printed = testing::internal::GetCapturedStdout();
+    EXPECT_NE(printed.find("Matrice 4x4"), std::string::npos);
+    EXPECT_EQ(system.getRam().size(), 0U);
+    ASSERT_GE(system.executionTrace().size(), 2U);
+    EXPECT_EQ(system.executionTrace()[system.executionTrace().size()-2], mss::OperationName::Look);
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Clean);
+}
+
+TEST(AdvancedOperationsTest, RunAutomaticallyLooksAtFinalResult) {
+    mss::MonSuperSysteme system;
+    const int source = system.loadMatrix(pattern(4));
+    const int finalResult = system.loadOperation(mss::OperationName::Rotate, {source}).at(0);
+    testing::internal::CaptureStdout();
+    system.run();
+    const std::string printed = testing::internal::GetCapturedStdout();
+    EXPECT_NE(printed.find("RAM[" + std::to_string(finalResult) + "] : Matrice 4x4"), std::string::npos);
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Look);
+    EXPECT_EQ(system.pendingOperations(), 0U);
+}
+
+TEST(AdvancedOperationsTest, AutomaticLookFollowsLastRequestedCalculation) {
+    mss::MonSuperSysteme system;
+    const int a = system.loadMatrix(pattern(2));
+    const int b = system.loadMatrix(pattern(2));
+    const int first = system.loadOperation(mss::OperationName::Add, {a, b}).at(0);
+    const int last = system.loadOperation(mss::OperationName::Multiply, {a, b}).at(0);
+    testing::internal::CaptureStdout();
+    system.run();
+    const std::string printed = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(printed.find("RAM[" + std::to_string(first) + "] :"), std::string::npos);
+    EXPECT_NE(printed.find("RAM[" + std::to_string(last) + "] :"), std::string::npos);
+    EXPECT_EQ(std::count(system.executionTrace().begin(), system.executionTrace().end(),
+                         mss::OperationName::Look), 1);
+}
+
+TEST(AdvancedOperationsTest, AutomaticLookRunsBeforeClean) {
+    mss::MonSuperSysteme system;
+    const int a = system.loadMatrix(pattern(4));
+    const int result = system.loadOperation(mss::OperationName::Mirror, {a}).at(0);
+    system.loadOperation(mss::OperationName::Clean, {});
+    testing::internal::CaptureStdout();
+    system.run();
+    const std::string printed = testing::internal::GetCapturedStdout();
+    EXPECT_NE(printed.find("RAM[" + std::to_string(result) + "] : Matrice 4x4"), std::string::npos);
+    ASSERT_GE(system.executionTrace().size(), 2U);
+    EXPECT_EQ(system.executionTrace()[system.executionTrace().size() - 2], mss::OperationName::Look);
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Clean);
+    EXPECT_EQ(system.getRam().size(), 0U);
+}
+
+TEST(AdvancedOperationsTest, AutomaticLookDoesNotDuplicateExplicitLook) {
+    mss::MonSuperSysteme system;
+    const int a = system.loadMatrix(pattern(2));
+    const int result = system.loadOperation(mss::OperationName::Rotate, {a}).at(0);
+    system.loadOperation(mss::OperationName::Look, {result});
+    testing::internal::CaptureStdout();
+    system.run();
+    testing::internal::GetCapturedStdout();
+    EXPECT_EQ(std::count(system.executionTrace().begin(), system.executionTrace().end(),
+                         mss::OperationName::Look), 1);
+}
+
+TEST(AdvancedOperationsTest, AutomaticLookDisplaysAllSplitOutputs) {
+    mss::MonSuperSysteme system;
+    const int a = system.loadMatrix(pattern(2));
+    const auto results = system.loadOperation(mss::OperationName::Split, {a});
+    testing::internal::CaptureStdout();
+    system.run();
+    const std::string printed = testing::internal::GetCapturedStdout();
+    for (int result : results)
+        EXPECT_NE(printed.find("RAM[" + std::to_string(result) + "] : Matrice 1x1"), std::string::npos);
+    EXPECT_EQ(std::count(system.executionTrace().begin(), system.executionTrace().end(),
+                         mss::OperationName::Look), 4);
+}

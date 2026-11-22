@@ -20,6 +20,7 @@ TEST(DemoInputControllerTest, GeneratesAndSavesTheDemoExecutionTrace) {
     configuration.set(mss::OperationName::Multiply, 2);
     configuration.set(mss::OperationName::Split, 3);
     configuration.set(mss::OperationName::Fuse, 4);
+    configuration.set(mss::OperationName::Look, 1);
     std::istringstream input;
     std::ostringstream terminal;
     mss::UserOutputController output({configuration}, input, terminal);
@@ -33,7 +34,7 @@ TEST(DemoInputControllerTest, GeneratesAndSavesTheDemoExecutionTrace) {
     EXPECT_EQ(system.executionTrace()[1], mss::OperationName::Multiply);
     EXPECT_EQ(system.executionTrace()[2], mss::OperationName::Split);
     EXPECT_EQ(system.executionTrace()[3], mss::OperationName::Fuse);
-    EXPECT_EQ(system.executionTrace()[4], mss::OperationName::Split);
+    EXPECT_EQ(system.executionTrace()[4], mss::OperationName::Look);
     EXPECT_DOUBLE_EQ(system.initialMatrix().at(0, 0), 1.0);
     EXPECT_DOUBLE_EQ(system.initialMatrix().at(1, 1), 4.0);
     EXPECT_NE(terminal.str().find("Trace d'execution :"), std::string::npos);

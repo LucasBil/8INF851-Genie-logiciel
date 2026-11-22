@@ -15,6 +15,7 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     mss::SerializerTool serializer;
     mss::Configuration configuration;
     configuration.set(mss::OperationName::Split, 4);
+    configuration.set(mss::OperationName::Look, 1);
     const auto uniqueId = std::chrono::steady_clock::now().time_since_epoch().count();
     const std::string name = "user_input_test_" + std::to_string(uniqueId);
     serializer.saveConfiguration(configuration, name);
@@ -40,8 +41,13 @@ TEST(UserInputControllerTest, QueuesSelectedOperationsForTheCore) {
     std::filesystem::remove(std::filesystem::path("configurations") / (name + ".txt"));
 
     EXPECT_DOUBLE_EQ(system.initialMatrix().at(0, 0), 1.0);
-    ASSERT_EQ(system.executionTrace().size(), 1);
+    // Split produit quatre sous-matrices : MSS ajoute automatiquement
+    // un Look pour chacune, apres Split.
+    ASSERT_EQ(system.executionTrace().size(), 5);
     EXPECT_EQ(system.executionTrace().front(), mss::OperationName::Split);
+    for (std::size_t i = 1; i < system.executionTrace().size(); ++i) {
+        EXPECT_EQ(system.executionTrace()[i], mss::OperationName::Look);
+    }
     EXPECT_EQ(system.pendingOperations(), 0);
     EXPECT_NE(terminal.str().find("Matrice creee a l'adresse RAM 0."),
               std::string::npos);
