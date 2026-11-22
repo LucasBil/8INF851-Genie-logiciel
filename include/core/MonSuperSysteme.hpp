@@ -66,6 +66,7 @@ class MonSuperSysteme {
     int loadMatrix(Matrix matrix);
     // Enregistre une instruction et reserve ses adresses de sortie.
     // Split : 4 sorties, Print, Clean et Look : 0, les autres : 1.
+    // Clean vide la RAM apres toutes les operations en attente et conserve la trace.
     std::vector<int> loadOperation(OperationName type, const std::vector<int> &inputs,
                                    const std::vector<int> &outputs = {});
     const Matrix &resultAt(int address) const;

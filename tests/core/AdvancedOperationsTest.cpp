@@ -1,6 +1,7 @@
 #include "core/MonSuperSysteme.hpp"
 #include <gtest/gtest.h>
 #include <cmath>
+#include <algorithm>
 #include <vector>
 #include <sstream>
 #include <string>
@@ -92,31 +93,60 @@ TEST(AdvancedOperationsTest, PendingResultsCannotBeAccessed) {
     EXPECT_NO_THROW(system.resultAt(result));
 }
 
-TEST(AdvancedOperationsTest, ExplicitCleanIsQueuedTracedAndPreservesPublicResults) {
+TEST(AdvancedOperationsTest, ExplicitCleanEmptiesRamAndPreservesTrace) {
     mss::MonSuperSysteme system;
     const int source = system.loadMatrix(pattern(4));
     const int result = system.loadOperation(mss::OperationName::Rotate, {source}).at(0);
-    const auto cleaned = system.loadOperation(mss::OperationName::Clean, {});
-    EXPECT_TRUE(cleaned.empty());
+    EXPECT_TRUE(system.loadOperation(mss::OperationName::Clean, {}).empty());
     EXPECT_EQ(system.pendingOperations(), 2U);
     system.run();
     EXPECT_EQ(system.pendingOperations(), 0U);
-    EXPECT_DOUBLE_EQ(system.resultAt(result).at(0, 0), 52.0);
-    EXPECT_DOUBLE_EQ(system.resultAt(source).at(0, 0), 1.0);
-    EXPECT_EQ(system.occupiedMemory(), 2U);
+    EXPECT_EQ(system.occupiedMemory(), 0U);
+    EXPECT_EQ(system.getRam().size(), 0U);
+    EXPECT_THROW(system.resultAt(source), std::out_of_range);
+    EXPECT_THROW(system.resultAt(result), std::out_of_range);
     ASSERT_FALSE(system.executionTrace().empty());
     EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Clean);
 }
 
-TEST(AdvancedOperationsTest, CleanBeforeCalculationDoesNotDeletePendingOutputs) {
+TEST(AdvancedOperationsTest, CleanBeforeCalculationRunsLastAndEmptiesRam) {
     mss::MonSuperSysteme system;
     const int source = system.loadMatrix(pattern(4));
     system.loadOperation(mss::OperationName::Clean, {});
-    const int result = system.loadOperation(mss::OperationName::Mirror, {source}).at(0);
+    system.loadOperation(mss::OperationName::Mirror, {source});
     system.run();
-    EXPECT_DOUBLE_EQ(system.resultAt(result).at(0, 0), 4.0);
-    EXPECT_EQ(system.occupiedMemory(), 2U);
+    EXPECT_EQ(system.pendingOperations(), 0U);
+    EXPECT_EQ(system.getRam().size(), 0U);
+    EXPECT_EQ(system.occupiedMemory(), 0U);
+    ASSERT_GE(system.executionTrace().size(), 2U);
     EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Clean);
+    EXPECT_NE(std::find(system.executionTrace().begin(), system.executionTrace().end(),
+                        mss::OperationName::Mirror), system.executionTrace().end());
+}
+
+TEST(AdvancedOperationsTest, MultipleCleanOperationsDoNotLeaveDanglingInstructions) {
+    mss::MonSuperSysteme system;
+    system.loadMatrix(pattern(2));
+    system.loadOperation(mss::OperationName::Clean, {});
+    system.loadOperation(mss::OperationName::Clean, {});
+    system.run();
+    EXPECT_EQ(system.getRam().size(), 0U);
+    EXPECT_EQ(system.pendingOperations(), 0U);
+    ASSERT_EQ(system.executionTrace().size(), 2U);
+    EXPECT_EQ(system.executionTrace().front(), mss::OperationName::Clean);
+    EXPECT_EQ(system.executionTrace().back(), mss::OperationName::Clean);
+}
+
+TEST(AdvancedOperationsTest, CleanAllowsFreshMatrixAndSecondExecution) {
+    mss::MonSuperSysteme system;
+    system.loadMatrix(pattern(2));
+    system.loadOperation(mss::OperationName::Clean, {});
+    system.run();
+    system.loadInitialMatrix(mss::Matrix({{1, 2}, {3, 4}}));
+    const int out = system.loadOperation(mss::OperationName::Mirror, {0}).at(0);
+    system.run();
+    EXPECT_DOUBLE_EQ(system.resultAt(out).at(0, 0), 2.0);
+    EXPECT_EQ(system.occupiedMemory(), 2U);
 }
 
 TEST(AdvancedOperationsTest, CleanRejectsInputAndOutputArguments) {
