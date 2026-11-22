@@ -66,7 +66,9 @@ class MonSuperSysteme {
     int loadMatrix(Matrix matrix);
     // Enregistre une instruction et reserve ses adresses de sortie.
     // Split : 4 sorties, Print, Clean et Look : 0, les autres : 1.
-    // Clean vide la RAM apres toutes les operations en attente et conserve la trace.
+    // run() ajoute automatiquement Look pour les sorties de la derniere operation
+    // de calcul explicite, apres les calculs et avant un Clean eventuel.
+    // Clean vide la RAM apres les operations Look et conserve la trace.
     std::vector<int> loadOperation(OperationName type, const std::vector<int> &inputs,
                                    const std::vector<int> &outputs = {});
     const Matrix &resultAt(int address) const;
@@ -85,6 +87,9 @@ class MonSuperSysteme {
 
   private:
 
+    // Resultats des dernieres operations demandees par l'appelant (hors sous-operations).
+    // Ils seront affiches automatiquement par Look a la fin de run().
+    std::vector<int> finalResultAddresses;
     std::deque<int> queue;
     int nextReady() const;
     void expand(const Operation &operation);

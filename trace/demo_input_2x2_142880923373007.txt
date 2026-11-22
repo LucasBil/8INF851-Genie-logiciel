@@ -1,0 +1,15 @@
+Trace d'execution :
+1. Add (CPU)
+2. Multiply (CPU)
+3. Split (RAM)
+4. Fuse (RAM)
+5. Look (RAM)
+Configuration 1 : 5
+  Sous-total RAM : 3
+  Sous-total CPU : 2
+  1. Add : 1 (CPU)
+  2. Multiply : 1 (CPU)
+  3. Split : 1 (RAM)
+  4. Fuse : 1 (RAM)
+  5. Look : 1 (RAM)
+Meilleure configuration : 1 (cout : 5)
