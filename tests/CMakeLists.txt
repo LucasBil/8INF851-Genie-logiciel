@@ -11,6 +11,7 @@ add_executable(mss_tests
     io/UserInputControllerTest.cpp
     io/DemoInputControllerTest.cpp
     io/UserOutputControllerTest.cpp
+    io/LoggerTest.cpp
     serializer/ConfigurationSerializerTest.cpp
     serializer/SerializerToolTest.cpp
 )

@@ -2,6 +2,7 @@
 
 #include "configuration/Configuration.hpp"
 #include "io/AbstractInputController.hpp"
+#include "logging/Logger.hpp"
 
 #include <iosfwd>
 #include <string>
@@ -57,6 +58,7 @@ class UserInputController final : public AbstractInputController {
     std::istream &input;
     std::ostream &terminal;
     std::vector<Configuration> configurations;
+    Logger logger;
 };
 
 } // namespace mss

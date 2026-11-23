@@ -8,7 +8,12 @@
 namespace mss {
 
 std::string SerializerTool::getConfigurationDirectoryContent() {
-    return fileExplorer.getConfigurationDirectoryContent();
+    try {
+        return fileExplorer.getConfigurationDirectoryContent();
+    } catch (const std::exception &error) {
+        logger.error(std::string("Impossible de lister les configurations : ") + error.what());
+        throw;
+    }
 }
 
 void SerializerTool::saveConfiguration(const Configuration &configuration, const std::string &name) {
@@ -22,11 +27,17 @@ void SerializerTool::saveConfiguration(const Configuration &configuration, const
     if (path.extension() != ".txt") {
         path += ".txt";
     }
-    std::filesystem::create_directories(path.parent_path());
-    configurationSerializer.open(path.string(), std::ios::out | std::ios::trunc);
     try {
+        std::filesystem::create_directories(path.parent_path());
+        configurationSerializer.open(path.string(), std::ios::out | std::ios::trunc);
         configurationSerializer.save(configuration);
         configurationSerializer.close();
+        logger.info("Configuration sauvegardee : " + path.string());
+    } catch (const std::exception &error) {
+        logger.error("Echec de sauvegarde de la configuration " + path.string() + " : " +
+                     error.what());
+        configurationSerializer.close();
+        throw;
     } catch (...) {
         configurationSerializer.close();
         throw;
@@ -35,11 +46,17 @@ void SerializerTool::saveConfiguration(const Configuration &configuration, const
 
 Configuration SerializerTool::loadConfiguration(int index) {
     const std::string path = fileExplorer.getConfigurationPath(index);
-    configurationSerializer.open(path);
     try {
+        configurationSerializer.open(path);
         Configuration configuration = configurationSerializer.load();
         configurationSerializer.close();
+        logger.info("Configuration chargee : " + path);
         return configuration;
+    } catch (const std::exception &error) {
+        logger.error("Echec de chargement de la configuration " + path + " : " +
+                     error.what());
+        configurationSerializer.close();
+        throw;
     } catch (...) {
         configurationSerializer.close();
         throw;

@@ -6,7 +6,7 @@ add_library(mss_io
 )
 
 target_include_directories(mss_io PUBLIC "${PROJECT_SOURCE_DIR}/include")
-target_link_libraries(mss_io PUBLIC mss_core)
+target_link_libraries(mss_io PUBLIC mss_core mss_logging)
 target_compile_options(mss_io PRIVATE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall;-Wextra;-Wpedantic;-Werror>
 )

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "configuration/Configuration.hpp"
+#include "logging/Logger.hpp"
 #include "serializer/ConfigurationSerializer.hpp"
 #include "serializer/FileExplorer.hpp"
 
@@ -34,6 +35,7 @@ class SerializerTool {
     Configuration loadConfiguration(int index);
 
   private:
+    Logger logger;
     FileExplorer fileExplorer;
     ConfigurationSerializer configurationSerializer;
 };
