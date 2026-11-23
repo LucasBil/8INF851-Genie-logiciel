@@ -46,6 +46,10 @@ void MonSuperSysteme::clear() noexcept {
     finalResultAddresses.clear(); ram.clear();
 }
 
+void MonSuperSysteme::fullClean() noexcept {
+    clear();
+}
+
 std::vector<int> MonSuperSysteme::loadOperation(OperationName type,
         const std::vector<int> &inputs, const std::vector<int> &outputs) {
     std::size_t inputCount = 0;

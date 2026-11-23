@@ -198,7 +198,27 @@ TEST(UserInputControllerTest, SeparatesMenuChoicesWithWhitespace) {
                   "2. Creer et sauvegarder une configuration\n\n"
                   "3. Entrer une matrice\n\n"
                   "4. Executer une operation\n\n"
-                  "5. Quitter\n\n"
+                  "5. Quitter\n"
+                  "6. Full_Clean (vider RAM, file et trace; conserver les configurations)\n\n"
                   "Votre choix : "),
               std::string::npos);
+}
+
+TEST(UserInputControllerTest, FullCleanPreservesLoadedConfigurations) {
+    mss::SerializerTool serializer;
+    mss::Configuration configuration;
+    configuration.set(mss::OperationName::Add, 3);
+    std::istringstream input("3 2 1 2 3 4 6 5");
+    std::ostringstream terminal;
+    mss::UserOutputController output({configuration}, input, terminal);
+    mss::MonSuperSysteme system;
+    mss::UserInputController controller(serializer, output, system, input, terminal);
+
+    controller.run();
+
+    EXPECT_EQ(system.getRam().size(), 0U);
+    EXPECT_EQ(system.pendingOperations(), 0U);
+    EXPECT_TRUE(system.executionTrace().empty());
+    EXPECT_TRUE(output.hasConfigurations());
+    EXPECT_NE(terminal.str().find("Full_Clean termine"), std::string::npos);
 }

@@ -77,6 +77,9 @@ class MonSuperSysteme {
     std::size_t occupiedMemory() const noexcept;
     // Vide RAM, file et trace pour recommencer une simulation.
     void clear() noexcept;
+    // Full_Clean : efface RAM, operations en attente, resultats et trace.
+    // Les configurations actives sont conservees par les controleurs, hors MSS.
+    void fullClean() noexcept;
 
     /**
      * @brief retourne un version écrite de l'historique des operations effecutées
