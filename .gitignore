@@ -1,6 +1,9 @@
 # CMake and compiled build output
 /build*/
 /out/
+/run-mss.bat
+/run-tests.bat
+/run-coverage.bat
 CMakeFiles/
 CMakeCache.txt
 CTestTestfile.cmake

@@ -203,16 +203,20 @@ void UserOutputController::outputTrace(const std::vector<OperationName> &trace,
                                        const std::filesystem::path &filePath) {
     std::ofstream file(filePath);
     if (!file) {
+        logger.error("Impossible d'ouvrir le fichier de trace " + filePath.string());
         throw std::runtime_error("Impossible d'ouvrir le fichier de sauvegarde.");
     }
     file << buildReport(configurations, trace);
     if (!file) {
+        logger.error("Echec d'ecriture du fichier de trace " + filePath.string());
         throw std::runtime_error("Ecriture de la trace impossible.");
     }
     file.close();
     if (!file) {
+        logger.error("Echec de fermeture du fichier de trace " + filePath.string());
         throw std::runtime_error("Ecriture de la trace impossible.");
     }
+    logger.info("Trace sauvegardee : " + filePath.string());
     output << "Trace sauvegardee.\n";
     output << "Fichier : " << filePath.string() << '\n';
 }

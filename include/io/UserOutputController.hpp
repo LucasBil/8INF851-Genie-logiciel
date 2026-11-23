@@ -2,6 +2,7 @@
 
 #include "configuration/Configuration.hpp"
 #include "core/Matrix.hpp"
+#include "logging/Logger.hpp"
 
 #include <filesystem>
 #include <iosfwd>
@@ -57,6 +58,7 @@ class UserOutputController {
     std::vector<Configuration> configurations;
     std::istream &input;
     std::ostream &output;
+    Logger logger;
 };
 
 } // namespace mss

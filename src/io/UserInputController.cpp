@@ -334,11 +334,16 @@ void UserInputController::execute() {
         operations.emplace_back(operation, std::move(inputLocations));
     }
 
-    for (const auto &operation : operations) {
-        mssInstance->loadOperation(operation.first, operation.second);
+    try {
+        for (const auto &operation : operations) {
+            mssInstance->loadOperation(operation.first, operation.second);
+        }
+        terminal << operations.size() << " operation(s) ajoutee(s) a MSS.\n";
+        mssInstance->run();
+    } catch (const std::exception &error) {
+        logger.error(std::string("Echec d'execution interactive : ") + error.what());
+        throw;
     }
-    terminal << operations.size() << " operation(s) ajoutee(s) a MSS.\n";
-    mssInstance->run();
     if (mssInstance->executionTrace().empty()) {
         terminal << "Aucune operation n'a ete executee par MSS; aucun bilan n'est disponible.\n";
         return;
@@ -372,7 +377,13 @@ void UserInputController::run() {
             case 0: {
                 MonSuperSysteme demoSystem;
                 DemoInputController demo(*serializer, *output, demoSystem);
-                demo.run();
+                try {
+                    demo.run();
+                } catch (const std::exception &error) {
+                    logger.error(std::string("Echec de la demonstration automatique : ") +
+                                 error.what());
+                    throw;
+                }
                 break;
             }
             case 1:

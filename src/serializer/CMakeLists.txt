@@ -4,7 +4,7 @@ add_library(mss_serializer
     SerializerTool.cpp
 )
 target_include_directories(mss_serializer PUBLIC "${PROJECT_SOURCE_DIR}/include")
-target_link_libraries(mss_serializer PUBLIC mss_core)
+target_link_libraries(mss_serializer PUBLIC mss_core mss_logging)
 target_compile_options(mss_serializer PRIVATE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall;-Wextra;-Wpedantic;-Werror>
 )
