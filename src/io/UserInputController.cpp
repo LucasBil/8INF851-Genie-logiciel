@@ -365,7 +365,7 @@ void UserInputController::run() {
                  << '\n'
                  << "4. Executer une operation\n"
                  << '\n'
-                 << "5. Quitter\n"
+                 << "5. Quitter\n\n"
                  << "6. Full_Clean (vider RAM, file et trace; conserver les configurations)\n\n";
         int choice = 0;
         if (!readInteger("Votre choix : ", choice)) {

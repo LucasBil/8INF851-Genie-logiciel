@@ -1,6 +1,8 @@
 # MSS — Mon Super Système
 
-Prototype C++17 du simulateur MSS. Cette première version fournit la structure CMake en trois modules, les types de base, une saisie de matrice et les tests. Les opérations, leurs coûts et la sérialisation ne sont pas encore activés tant que leurs règles et les champs de configuration ne sont pas confirmés.
+Simulateur MSS en C++17. Le programme propose une interface interactive pour charger ou créer des configurations de coûts, saisir des matrices, exécuter des opérations et consulter leur bilan.
+
+Pour les procédures d'utilisation, les opérations et la lecture des résultats, consultez le [guide utilisateur](USER_GUIDE.md).
 
 ## Prérequis
 
@@ -20,7 +22,7 @@ cmake --build build-mingw
 .\build-mingw\mss.exe
 ```
 
-L'application demande le nombre de lignes et de colonnes, puis les valeurs de la matrice. Elle vérifie et réaffiche la matrice chargée à l'adresse mémoire zéro. Elle retourne un code d'erreur et un message explicite si l'entrée est invalide.
+L'application affiche un menu interactif. Les configurations sont lues et sauvegardées dans `configurations/`; les traces peuvent être sauvegardées dans `trace/`. Pour les détails du parcours utilisateur, consultez le [guide utilisateur](USER_GUIDE.md).
 
 Pour exécuter les tests :
 
@@ -49,10 +51,3 @@ gcovr -r . build-cov --object-directory build-cov --filter 'src/(core|io)' --fai
 ```
 
 Google Test est récupéré avec `FetchContent`. Le code de couverture nécessite GCC ou Clang et `gcovr`.
-
-## État du prototype
-
-- **Disponible** : `Matrix`, adresses de RAM, matrice initiale MSS, enum `OperationName`, lecture/affichage via flux injectables, tests unitaires.
-- **En attente** : sémantique de `execute`/`run`, règles des opérations, coûts CPU/RAM, champs de configuration JSON et outils de sérialisation.
-
-`Cpu::getOperationCost` et `Ram::getOperationCost` signalent explicitement que leur modèle n'est pas encore spécifié; ils ne renvoient pas de coût fictif.

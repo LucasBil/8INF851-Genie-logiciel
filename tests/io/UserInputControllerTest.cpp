@@ -198,7 +198,7 @@ TEST(UserInputControllerTest, SeparatesMenuChoicesWithWhitespace) {
                   "2. Creer et sauvegarder une configuration\n\n"
                   "3. Entrer une matrice\n\n"
                   "4. Executer une operation\n\n"
-                  "5. Quitter\n"
+                  "5. Quitter\n\n"
                   "6. Full_Clean (vider RAM, file et trace; conserver les configurations)\n\n"
                   "Votre choix : "),
               std::string::npos);
