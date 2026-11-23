@@ -19,6 +19,7 @@ if(ENABLE_COVERAGE AND NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 add_subdirectory(src/core)
+add_subdirectory(src/logging)
 add_subdirectory(src/io)
 add_subdirectory(src/serializer)
 
@@ -43,7 +44,7 @@ if(MSS_BUILD_TESTS)
 endif()
 
 if(ENABLE_COVERAGE)
-    foreach(target mss_core mss_io)
+    foreach(target mss_core mss_logging mss_io mss_serializer)
         target_compile_options(${target} PRIVATE --coverage -O0 -g)
         target_link_options(${target} PRIVATE --coverage)
     endforeach()
