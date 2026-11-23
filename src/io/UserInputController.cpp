@@ -360,7 +360,8 @@ void UserInputController::run() {
                  << '\n'
                  << "4. Executer une operation\n"
                  << '\n'
-                 << "5. Quitter\n\n";
+                 << "5. Quitter\n"
+                 << "6. Full_Clean (vider RAM, file et trace; conserver les configurations)\n\n";
         int choice = 0;
         if (!readInteger("Votre choix : ", choice)) {
             return;
@@ -388,6 +389,11 @@ void UserInputController::run() {
                 break;
             case 5:
                 return;
+            case 6:
+                mssInstance->fullClean();
+                terminal << "Full_Clean termine : RAM, file et trace effacees. "
+                            "Les configurations chargees sont conservees.\n";
+                break;
             default:
                 terminal << "Choix invalide.\n";
                 break;
