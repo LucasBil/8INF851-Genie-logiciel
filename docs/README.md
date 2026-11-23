@@ -1,7 +1,5 @@
 # Documentation du projet MSS
 
-Ce dossier est réservé à la documentation fonctionnelle destinée au client et aux spécifications détaillées.
+Le [guide utilisateur](../USER_GUIDE.md) décrit le menu, les opérations disponibles, les configurations et la lecture des bilans.
 
-La section « Fonctionnement » du cahier de conception n'étant pas fournie, elle reste à rédiger avec les règles d'utilisation attendues. Les règles d'exécution de chaque opération et les paramètres CPU/RAM doivent également être confirmés avant la rédaction des procédures détaillées.
-
-Pour compiler et lancer le prototype actuel, consulter le [README principal](../README.md).
+Pour compiler, lancer et tester l'application, consulter le [README principal](../README.md) et le [guide d'exécution](../EXECUTION.md).
